@@ -4,6 +4,21 @@
 This application is built with <a href='https://nodejs.org/en/'>NodeJS</a> and 
 <a href='https://reactjs.org/'>React</a>
 
+## Running this Web Application
+First, make sure the API is running (see ./api)
+
+For testing:
+```
+npm start
+```
+
+For a production server:
+```
+npm run-script build
+node server.js
+```
+
+
 We use <a href='https://eslint.org/docs/user-guide/getting-started'>ESLint</a> 
 for linting to ensure consistent code quality (and style, where appropriate)
 
