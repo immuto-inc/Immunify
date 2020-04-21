@@ -1,0 +1,27 @@
+{
+  "name": "immunify-api",
+  "version": "1.0.0",
+  "description": "API for Immunify's web app and native mobile applications",
+  "main": "api.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/immuto-inc/Immunify.git"
+  },
+  "author": "Sebastian Coates",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/immuto-inc/Immunify/issues"
+  },
+  "homepage": "https://github.com/immuto-inc/Immunify#readme",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^2.29.0",
+    "@typescript-eslint/parser": "^2.29.0",
+    "eslint": "^6.8.0",
+    "source-map-loader": "^0.2.4",
+    "ts-loader": "^7.0.1",
+    "typescript": "^3.8.3"
+  }
+}
