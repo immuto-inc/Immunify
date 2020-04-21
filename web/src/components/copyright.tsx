@@ -6,7 +6,7 @@ const Copyright = () => {
   return (
     <Typography variant="body2" color="textSecondary" align="center">
       {'Copyright © '}
-      <Link color="inherit" target="_blank" href="https://www.immuto.io">
+      <Link color="inherit" target="_blank" rel="noopener"href="https://www.immuto.io">
         Immuto, Inc.
       </Link>{' '}
       {new Date().getFullYear()}

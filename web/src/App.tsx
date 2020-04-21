@@ -17,7 +17,8 @@ import Register from "./components/register"
 
 let theme = createMuiTheme({
   palette: {
-    primary: { light: "#000000", main: "#000000", dark: "#000000" }
+    primary: { light: "#000000", main: "#000000", dark: "#000000" },
+    secondary: { light: "#ffffff", main: "#ffffff", dark: "#ffffff" }
   }
 });
 theme = responsiveFontSizes(theme);
@@ -28,13 +29,16 @@ function App() {
     <Router>
       <Switch>
         <Route exact path="/">
-            {() => <Homepage test="test"/>}
+            {() => <Homepage/>}
         </Route>     
         <Route exact path="/login">
             {() => <Login/>}
         </Route> 
         <Route exact path="/register">
             {() => <Register/>}
+        </Route> 
+        <Route exact path="/dashboard">
+            {() => <div>Dashboard</div>}
         </Route> 
       </Switch>
     </Router>

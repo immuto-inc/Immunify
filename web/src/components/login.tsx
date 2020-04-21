@@ -108,6 +108,7 @@ const Login = () => {
     </Container>
   );
 }
+
 // function handleForm(email, password, history, setUserType) {
 //     if (im.authToken) {
 //         im.deauthenticate()
