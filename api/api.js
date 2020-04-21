@@ -3,7 +3,7 @@ const path = require("path");
 const bodyParser = require("body-parser");
 const immuto = require("immuto-backend");
 var schedule = require('node-schedule');
-//const cors = require("cors");
+const cors = require("cors");
 const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 //const crypto = require('crypto')
 const cluster = require('cluster')
@@ -108,6 +108,10 @@ function requireAuth(req, res, next) {
       res.status(500).end();
   })
 }
+
+app.use(cors({
+  origin: ["http://localhost:3000", "https://immunify.herokuapp.com", "https://immunify.us"]
+}))
 
 /************************************ API *************************************/
 app.post("/register-org-user", validateInput, (req, res) => {

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, Dispatch, SetStateAction } from "react";
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -12,12 +12,14 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import Copyright from './copyright'
+import Copyright from './copyright';
+import { Redirect, withRouter, useHistory } from "react-router-dom"
+
+import { API_URL } from "../utils";
 
 // @ts-ignore
-import immuto from 'immuto-backend'
-export const im = immuto.init(true, "https://dev.immuto.io")
-
+import immuto from 'immuto-backend';
+export const im = immuto.init(true, "https://dev.immuto.io");
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -39,8 +41,40 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Login = () => {
+
+const Login = ({setAuthToken} : {setAuthToken : Dispatch<SetStateAction<string>>} ) => {
   const classes = useStyles();
+  const history = useHistory();
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+
+  const handleEmailChange = (e : React.ChangeEvent<HTMLInputElement>) => {
+     setEmail(e.target.value);
+  }
+  const handlePasswordChange = (e : React.ChangeEvent<HTMLInputElement>) => {
+     setPassword(e.target.value);
+  }
+
+  //email : string, password : string
+  function handleForm(e : React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+
+    if (im.authToken) {
+        im.deauthenticate()
+    }
+
+    im.authenticate(email, password).then((authToken : string) => {
+        create_user_session(authToken).then(() => {
+          setAuthToken(authToken)
+          history.push('/dashboard') //           
+        }).catch((err : string) => {
+          console.log(err)
+          alert("Error logging in: " + err)
+        })
+    }).catch((err : string) => {
+        alert("Unable to login: \n" + err)
+    })
+  }
 
   return (
     <Container component="main" maxWidth="xs">
@@ -52,7 +86,7 @@ const Login = () => {
         <Typography component="h1" variant="h5">
           Sign in
         </Typography>
-        <form className={classes.form} noValidate>
+        <form className={classes.form} onSubmit={handleForm}>
           <TextField
             variant="outlined"
             margin="normal"
@@ -63,6 +97,7 @@ const Login = () => {
             name="email"
             autoComplete="email"
             autoFocus
+            onChange={handleEmailChange}
           />
           <TextField
             variant="outlined"
@@ -74,11 +109,12 @@ const Login = () => {
             type="password"
             id="password"
             autoComplete="current-password"
+            onChange={handlePasswordChange}
           />
-          <FormControlLabel
+          {/*<FormControlLabel
             control={<Checkbox value="remember" color="primary" />}
             label="Remember me"
-          />
+          />*/}
           <Button
             type="submit"
             fullWidth
@@ -90,8 +126,8 @@ const Login = () => {
           </Button>
           <Grid container>
             <Grid item xs>
-              <Link href="#" variant="body2">
-                Forgot password?
+              <Link href="" variant="body2">
+                {/* Forgot password could go here */}
               </Link>
             </Grid>
             <Grid item>
@@ -109,58 +145,21 @@ const Login = () => {
   );
 }
 
-// function handleForm(email, password, history, setUserType) {
-//     if (im.authToken) {
-//         im.deauthenticate()
-//     }
-
-//     im.authenticate(email, password).then((authToken) => {
-//         window.localStorage.authToken = authToken
-//         create_user_session(authToken).then((r: {userType: string}) => {
-//           let userType = ((r.userType && r.userType !== undefined)? r.userType : 'admin')
-//           window.localStorage.userType = userType
-//           setUserType(userType)
-//           history.push("/" + userType)
-//         }).catch((err) => {
-//             alert("[Error]: " + err)
-//         })
-//     }).catch((err) => {
-        
-//         alert("Unable to login: \n" + err)
-//     })
-// }
-
-// function create_user_session(authToken) {
-//   console.log(URL)
-//   console.log(JSON.stringify(authToken))
-//   // return fetch(URL + 'login-user', {
-//   //   method: 'POST',
-//   //   mode: 'cors', // no-cors, *cors, same-origin
-//   //   cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-//   //   // credentials: 'omit', // include, *same-origin, omit
-//   //   headers: {
-//   //     'Content-Type': 'application/x-www-form-urlencoded'
-//   //   },
-//   //   referrerPolicy: 'no-referrer', // no-referrer, *client
-//   //   body: "authToken=" + authToken // body data type must match "Content-Type" header
-//   // })
-//   // .then(r => JSON.parse(r))
-//   // .catch(e => console.error("[Login Error]: ", e))
-//     return new Promise((resolve, reject) => {
-//         var http = new XMLHttpRequest()
-//         let sendstring = "authToken=" + authToken
-//         http.open("POST", URL + "/login-user", true)
-//         http.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
-//         http.onreadystatechange = () => {
-//             if (http.readyState == 4 && http.status == 200) {
-//                 let response = JSON.parse(http.responseText)
-//                 resolve(response)
-//             } else if (http.readyState == 4) {
-//                 reject(http.responseText)
-//             }
-//         }
-//         http.send(sendstring)
-//     })
-// }
+function create_user_session(authToken : string) {
+    return new Promise((resolve, reject) => {
+        var http = new XMLHttpRequest()
+        let sendstring = "authToken=" + authToken
+        http.open("POST", API_URL + "/login-user", true)
+        http.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
+        http.onreadystatechange = () => {
+            if (http.readyState == 4 && http.status == 204) {
+                resolve()
+            } else if (http.readyState == 4) {
+                reject(http.responseText)
+            }
+        }
+        http.send(sendstring)
+    })
+}
 
 export default Login;

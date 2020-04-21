@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     BrowserRouter as Router,
     Route,
@@ -23,6 +23,8 @@ let theme = createMuiTheme({
 theme = responsiveFontSizes(theme);
 
 function App() {
+  const [authToken, setAuthToken] = useState("")
+
   return (
     <ThemeProvider theme={theme}>
     <Router>
@@ -31,13 +33,13 @@ function App() {
             {() => <Homepage/>}
         </Route>     
         <Route exact path="/login">
-            {() => <Login/>}
+            {() => <Login setAuthToken={setAuthToken}/>}
         </Route> 
         <Route exact path="/register">
             {() => <Register/>}
         </Route> 
         <Route exact path="/dashboard">
-            {() => <div>Dashboard</div>}
+            {() => <div>{authToken}</div>}
         </Route> 
       </Switch>
     </Router>
