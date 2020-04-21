@@ -2,14 +2,25 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 
+import { Button } from '@material-ui/core';
+import { ThemeProvider, createMuiTheme, responsiveFontSizes } from '@material-ui/core/styles';
+
+let theme = createMuiTheme({
+  palette: {
+    primary: { light: "#ffffaa", main: "#ffffaa", dark: "#ffffaa" }
+  }
+});
+theme = responsiveFontSizes(theme);
+
 function App() {
   return (
+    <ThemeProvider theme={theme}>
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        <p>
+        <Button color="primary">
           Edit <code>src/App.js</code> and save to reload.
-        </p>
+        </Button>
         <a
           className="App-link"
           href="https://reactjs.org"
@@ -20,6 +31,7 @@ function App() {
         </a>
       </header>
     </div>
+    </ThemeProvider>
   );
 }
 
