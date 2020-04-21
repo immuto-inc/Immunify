@@ -3,12 +3,11 @@ import {
     BrowserRouter as Router,
     Route,
     Switch,
-    Link,
-    Redirect
+    // Link,
+    // Redirect
 } from "react-router-dom";
 import './App.css';
 
-import { Button } from '@material-ui/core';
 import { ThemeProvider, createMuiTheme, responsiveFontSizes } from '@material-ui/core/styles';
 
 import Homepage from "./components/homepage"
