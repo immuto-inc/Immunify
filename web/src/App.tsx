@@ -1,13 +1,23 @@
 import React from 'react';
-import logo from './logo.svg';
+import {
+    BrowserRouter as Router,
+    Route,
+    Switch,
+    Link,
+    Redirect
+} from "react-router-dom";
 import './App.css';
 
 import { Button } from '@material-ui/core';
 import { ThemeProvider, createMuiTheme, responsiveFontSizes } from '@material-ui/core/styles';
 
+import Homepage from "./components/homepage"
+import Login from "./components/login"
+import Register from "./components/register"
+
 let theme = createMuiTheme({
   palette: {
-    primary: { light: "#ffffaa", main: "#ffffaa", dark: "#ffffaa" }
+    primary: { light: "#000000", main: "#000000", dark: "#000000" }
   }
 });
 theme = responsiveFontSizes(theme);
@@ -15,22 +25,19 @@ theme = responsiveFontSizes(theme);
 function App() {
   return (
     <ThemeProvider theme={theme}>
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Button color="primary">
-          Edit <code>src/App.js</code> and save to reload.
-        </Button>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Switch>
+        <Route exact path="/">
+            {() => <Homepage test="test"/>}
+        </Route>     
+        <Route exact path="/login">
+            {() => <Login/>}
+        </Route> 
+        <Route exact path="/register">
+            {() => <Register/>}
+        </Route> 
+      </Switch>
+    </Router>
     </ThemeProvider>
   );
 }
