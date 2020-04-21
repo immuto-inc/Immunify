@@ -1,4 +1,3 @@
-/* Immuto Web App Template | (c) Immuto, Inc. and other contributors */
 const express = require("express");
 const path = require("path");
 const bodyParser = require("body-parser");

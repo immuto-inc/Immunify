@@ -67,7 +67,7 @@ exports.user_logged_in = (req) => {
     })
 }
 
-function exports.get_auth_token(req) {
+exports.get_auth_token = (req) => {
     if (req.query && req.query.authToken) {
         return req.query.authToken 
     }

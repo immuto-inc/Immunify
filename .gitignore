@@ -2,3 +2,5 @@
 **node_modules
 **dist
 **set_vars.sh
+deploy_web.sh
+deploy_api.sh
