@@ -13,6 +13,7 @@ import { ThemeProvider, createMuiTheme, responsiveFontSizes } from '@material-ui
 import Homepage from "./components/homepage"
 import Login from "./components/login"
 import Register from "./components/register"
+import Dashboard from "./components/dashboard"
 
 let theme = createMuiTheme({
   palette: {
@@ -39,7 +40,7 @@ function App() {
             {() => <Register/>}
         </Route> 
         <Route exact path="/dashboard">
-            {() => <div>{authToken}</div>}
+            {() => <Dashboard authToken={authToken}/>}
         </Route> 
       </Switch>
     </Router>

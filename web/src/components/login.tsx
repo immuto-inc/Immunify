@@ -13,13 +13,13 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import Copyright from './copyright';
-import { Redirect, withRouter, useHistory } from "react-router-dom"
+import { useHistory } from "react-router-dom"
 
-import { API_URL } from "../utils";
+import { API_URL, IMMUTO_URL } from "../utils";
 
 // @ts-ignore
 import immuto from 'immuto-backend';
-export const im = immuto.init(true, "https://dev.immuto.io");
+export const im = immuto.init(true, IMMUTO_URL);
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -55,7 +55,6 @@ const Login = ({setAuthToken} : {setAuthToken : Dispatch<SetStateAction<string>>
      setPassword(e.target.value);
   }
 
-  //email : string, password : string
   function handleForm(e : React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
 
@@ -66,7 +65,7 @@ const Login = ({setAuthToken} : {setAuthToken : Dispatch<SetStateAction<string>>
     im.authenticate(email, password).then((authToken : string) => {
         create_user_session(authToken).then(() => {
           setAuthToken(authToken)
-          history.push('/dashboard') //           
+          history.push('/dashboard')          
         }).catch((err : string) => {
           console.log(err)
           alert("Error logging in: " + err)

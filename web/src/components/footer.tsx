@@ -19,8 +19,8 @@ const Footer = () => {
     <footer className={classes.footer}>
         <Typography variant="h6" align="center" gutterBottom>
             Immunify
-             <Typography variant="subtitle1" align="center" color="textSecondary" component="p">
-          <Link color="primary" target="_blank" rel="noopener" href="https://www.immuto.io">
+             <Typography variant="subtitle1" align="center" color="inherit" component="p">
+          <Link color="inherit" target="_blank" rel="noopener" href="https://www.immuto.io">
             Powered by Immuto
           </Link>{' '}
         </Typography>

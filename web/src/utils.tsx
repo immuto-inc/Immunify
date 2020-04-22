@@ -6,3 +6,12 @@ if (window.location.href.includes("herokuapp.com")) {
 }
 
 export const API_URL = URL
+
+let iURL = "https://dev.immuto.io" // constant 
+if (window.location.href.includes("herokuapp.com")) {
+    // leave as dev for now
+} else if (!window.location.href.includes("localhost")) {
+    // leave as dev for now
+}
+
+export const IMMUTO_URL = iURL
