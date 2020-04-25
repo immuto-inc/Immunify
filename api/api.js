@@ -264,7 +264,7 @@ function start_server() {
 
 // Reauthenticate periodicatlly
 // runs ``At minute 0 past every 6th hour''
-schedule.scheduleJob('* */6 * * *', function() { 
+schedule.scheduleJob('0 */6 * * *', function() { 
     im.deauthenticate()
     .then(() => {
       im.authenticate(cred.email, cred.password)
