@@ -14,7 +14,7 @@ const DEFAULT_PORT = 8002;
 
 if (cluster.isMaster) {
     // Count the machine's CPUs
-    let cpuCount = require('os').cpus().length;
+    var cpuCount = process.env.WEB_CONCURRENCY || require('os').cpus().length || 1;
 
     // Create a worker for each CPU
     for (let i = 0; i < cpuCount; i += 1) {

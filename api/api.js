@@ -219,7 +219,7 @@ im.authenticate(cred.email, cred.password)
 function start_server() {
   if (cluster.isMaster) {
     // Count the machine's CPUs
-    let cpuCount = require('os').cpus().length;
+    var cpuCount = process.env.WEB_CONCURRENCY || require('os').cpus().length || 1;
     if (MODE !== "PROD") { // limit to two workers in dev / test
       cpuCount = cpuCount > 2 ? 2 : 1
     }
