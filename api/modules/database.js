@@ -111,6 +111,7 @@ exports.get_user_info = (userEmail) => {
 
 
 exports.createForm = (formInfo) => {
+    console.log(formInfo)
     return new Promise((resolve, reject) => {
         DB.collection("researcherForms").insertOne(formInfo, (err, result) => {
             if (err) {
@@ -131,6 +132,51 @@ exports.getForm = (formId) => {
             if (err) {
                 reject(err)
             } else {
+                resolve(res)
+            }
+        })
+    })
+}
+
+exports.addQuestionToForm = (formData) => {
+
+    console.log(formData)
+
+    let query = {
+        "_id": ObjectId(formData.formId)
+    }
+
+
+    let update = ({
+        "$push": {
+            questions: { "inputType": formData.inputType, "question": formData.question }
+        }
+    });
+
+    return new Promise((resolve, reject) => {
+        DB.collection("researcherForms").updateOne(query, update, (err, res) => {
+            if (err) {
+                reject(err)
+            } else {
+
+                resolve(res)
+            }
+        })
+    })
+}
+
+exports.getListOfQuestions = (formId) => {
+
+    let query = {
+        "_id": ObjectId(formId)
+    }
+
+    return new Promise((resolve, reject) => {
+        DB.collection("researcherForms").findOne(query, (err, res) => {
+            if (err) {
+                reject(err)
+            } else {
+
                 resolve(res)
             }
         })

@@ -5,11 +5,7 @@ export default class AddToForm extends Component {
     state = {
         inputType: "text",
         question: "",
-        questionId: -1,
     }
-
-
-
 
     renderSampleInput = () => {
         return (
@@ -44,13 +40,21 @@ export default class AddToForm extends Component {
     }
 
     addToForm = async () => {
-        await axios.get("http://localhost:8001/addToForm")
+        console.log(this.props.formId)
+        const data = {
+            formId: this.props.formId,
+            inputType: this.state.inputType,
+            question: this.state.question,
+        }
+        await axios.post(`http://localhost:8001/addToForm`, data)
             .then((res) => {
                 console.log(res)
             })
             .catch((err) => {
                 console.error(err)
             })
+
+        this.props.fetchQuestionList()
     }
 
     render() {

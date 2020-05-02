@@ -1,26 +1,32 @@
-import axios from 'axios'
 import React, { Component } from 'react'
 
 export default class PreviewForm extends Component {
-    state = {
-        dbInfo: {}
-    }
 
-    componentDidMount = async () => {
-        await axios.get(`http://localhost:8001/addToForm?formId=${this.props.formId}`)
-            .then((res) => {
-                this.setState({ dbInfo: res.data })
-            })
-            .catch((err) => {
-                console.error(err)
-            })
-    }
+    renderQuestions = () => {
+        return this.props.questions.map((question, index) => {
+            return (
+                <div key={index}>
+                    ------------
+                    <br />
+                    <label>{question.question}</label>
+                    <input type={question.inputType} />
+                    <br /><br />
+                </div>
+            )
+        })
 
+    }
 
     render() {
         return (
             <div>
-                PreviewForm
+                Preview
+                <br />
+                <br />
+                <h3>{this.props.dbInfo.title}</h3>
+                <h4>{this.props.dbInfo.institution}</h4>
+
+                {this.renderQuestions()}
             </div>
         )
     }

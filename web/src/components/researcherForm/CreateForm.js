@@ -1,13 +1,13 @@
 import axios from 'axios'
 import React, { Component } from 'react'
-import { Link } from 'react-router-dom'
+import { Redirect } from 'react-router-dom'
 
 export default class ResearcherFormNew extends Component {
     state = {
         title: '',
         author: '',
         institution: '',
-        currentSize: 0,
+        redirect: null,
     }
 
     createForm = async (event) => {
@@ -17,7 +17,7 @@ export default class ResearcherFormNew extends Component {
             title: this.state.title,
             author: this.state.author,
             institution: this.state.institution,
-            currentSize: this.state.currentSize,
+            questions: [],
         }
 
         let formId
@@ -30,9 +30,15 @@ export default class ResearcherFormNew extends Component {
             .catch((err) => {
                 console.error(err)
             })
+
+        this.setState({ redirect: `/addToForm/${formId}` })
     }
 
     render() {
+        if (this.state.redirect) {
+            return <Redirect to={this.state.redirect} />
+        }
+
         return (
             <div>
                 <form>
@@ -63,7 +69,6 @@ export default class ResearcherFormNew extends Component {
 
                     <button onClick={this.createForm}>Create Form</button>
 
-                    <Link to="/addToForm/:formId">Let me build the form (testing purposes only) </Link>
                 </form>
             </div>
         )

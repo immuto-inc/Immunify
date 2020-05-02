@@ -322,6 +322,30 @@ app.get("/addToForm", (req, res) => {
     });
 })
 
+app.post("/addToForm", (req, res) => {
+  DB.addQuestionToForm(req.body, req.query.id)
+    .then((response) => {
+      res.send(response)
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).end();
+    });
+})
+
+app.get("/previewForm", (req, res) => {
+  DB.getListOfQuestions(req.query.formId)
+    .then((response) => {
+      res.send(response)
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).end();
+    });
+})
+
+
+
 
 /***************************** Utility Functions ******************************/
 function user_logged_in_immuto(authToken) {
