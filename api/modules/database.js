@@ -8,9 +8,9 @@ exports.establish_connection = () => {
     }
 
     return new Promise((resolve, reject) => {
-        MongoClient.connect(process.env.MONGODB_URI, { useUnifiedTopology: true, useNewUrlParser: true }, function(err, client) {
+        MongoClient.connect(process.env.MONGODB_URI, { useUnifiedTopology: true, useNewUrlParser: true }, function (err, client) {
             if (!err) {
-                DB = client.db() 
+                DB = client.db()
                 add_TTL_indices().then(() => {
                     resolve()
                 }).catch((err) => {
@@ -26,9 +26,9 @@ exports.establish_connection = () => {
 function add_TTL_indices() {
     return new Promise((resolve, reject) => {
         console.log("Adding TTL indices")
-        DB.collection("cookies").createIndex({"createdAt": 1}, {expireAfterSeconds: 86400}).then(() => {
+        DB.collection("cookies").createIndex({ "createdAt": 1 }, { expireAfterSeconds: 86400 }).then(() => {
             console.log("cookies TTL successful")
-             resolve()
+            resolve()
         }).catch((err) => {
             console.error("Failed to check or create cookies TTL index: ")
             reject(err)
@@ -40,7 +40,7 @@ exports.add_session = (authToken, userInfo) => {
     return new Promise((resolve, reject) => {
         let query = {
             createdAt: new Date(),
-            email: userInfo.email, 
+            email: userInfo.email,
             address: userInfo.userAddr,
             authToken: authToken
         }
@@ -56,7 +56,7 @@ exports.add_session = (authToken, userInfo) => {
 
 exports.delete_session = (authToken) => {
     return new Promise((resolve, reject) => {
-        let query = {authToken: authToken}
+        let query = { authToken: authToken }
         DB.collection("cookies").removeOne(query, (err, user) => {
             if (err) {
                 reject(err)
@@ -69,7 +69,7 @@ exports.delete_session = (authToken) => {
 
 exports.get_user_session = (authToken) => {
     return new Promise((resolve, reject) => {
-        let query = {authToken: authToken}
+        let query = { authToken: authToken }
         DB.collection("cookies").findOne(query, (err, userInfo) => {
             if (err) {
                 reject(err)
@@ -94,7 +94,51 @@ exports.add_new_user = (userInfo) => {
 
 exports.get_user_info = (userEmail) => {
     return new Promise((resolve, reject) => {
-        let query = {email: userEmail}
+        let query = { email: userEmail }
+        DB.collection("users").findOne(query, (err, userInfo) => {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(userInfo)
+            }
+        })
+    })
+}
+
+
+/* ------------------- CRUD Operations for Researcher Form ------------------ */
+
+
+
+exports.createForm = (formInfo) => {
+
+
+    return new Promise((resolve, reject) => {
+        DB.collection("researcherForms").insertOne(formInfo, (err, result) => {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(result)
+            }
+        })
+    })
+}
+
+exports.add_new_user = (userInfo) => {
+    return new Promise((resolve, reject) => {
+        DB.collection("users").insertOne(userInfo, (err, result) => {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(result)
+            }
+        })
+    })
+}
+
+exports.get_user_info = (userEmail) => {
+    return new Promise((resolve, reject) => {
+        let query = { email: userEmail }
         DB.collection("users").findOne(query, (err, userInfo) => {
             if (err) {
                 reject(err)

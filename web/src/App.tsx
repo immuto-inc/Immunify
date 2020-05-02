@@ -7,6 +7,7 @@ import Homepage from "./components/homepage";
 import Login from "./components/login";
 import Register from "./components/register";
 import ResearcherForm from './components/researcherForm/ResearcherForm';
+import ResearcherFormNew from './components/researcherForm/ResearcherFormNew';
 
 
 
@@ -37,7 +38,10 @@ function App() {
           <Route exact path="/dashboard">
             {() => <Dashboard authToken={authToken} />}
           </Route>
-          <Route exact path="/createForm">
+          <Route exact path="/newForm">
+            {() => <ResearcherFormNew authToken={authToken} />}
+          </Route>
+          <Route exact path="/addToForm">
             {() => <ResearcherForm authToken={authToken} />}
           </Route>
         </Switch>

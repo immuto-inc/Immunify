@@ -1,3 +1,4 @@
+import axios from 'axios'
 import React, { Component } from 'react'
 
 export default class AddForm extends Component {
@@ -38,8 +39,14 @@ export default class AddForm extends Component {
         })
     }
 
-    addToForm = () => {
-
+    addToForm = async () => {
+        await axios.get("http://localhost:8001/addToForm")
+            .then((res) => {
+                console.log(res)
+            })
+            .catch((err) => {
+                console.error(err)
+            })
     }
 
     render() {
