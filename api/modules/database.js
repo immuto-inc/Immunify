@@ -1,4 +1,5 @@
 const MongoClient = require('mongodb').MongoClient
+const ObjectId = require('mongodb').ObjectId;
 let DB = undefined
 
 exports.establish_connection = () => {
@@ -109,10 +110,7 @@ exports.get_user_info = (userEmail) => {
 /* ------------------- CRUD Operations for Researcher Form ------------------ */
 
 
-
 exports.createForm = (formInfo) => {
-
-
     return new Promise((resolve, reject) => {
         DB.collection("researcherForms").insertOne(formInfo, (err, result) => {
             if (err) {
@@ -124,26 +122,16 @@ exports.createForm = (formInfo) => {
     })
 }
 
-exports.add_new_user = (userInfo) => {
+exports.getForm = (formId) => {
     return new Promise((resolve, reject) => {
-        DB.collection("users").insertOne(userInfo, (err, result) => {
+        let query = {
+            "_id": ObjectId(formId)
+        }
+        DB.collection("researcherForms").findOne(query, (err, res) => {
             if (err) {
                 reject(err)
             } else {
-                resolve(result)
-            }
-        })
-    })
-}
-
-exports.get_user_info = (userEmail) => {
-    return new Promise((resolve, reject) => {
-        let query = { email: userEmail }
-        DB.collection("users").findOne(query, (err, userInfo) => {
-            if (err) {
-                reject(err)
-            } else {
-                resolve(userInfo)
+                resolve(res)
             }
         })
     })

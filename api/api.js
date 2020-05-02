@@ -299,9 +299,11 @@ process.on("SIGINT", function () {
 
 /* ------------------------ Researcher Form Endpoints ----------------------- */
 app.post('/createForm', (req, res) => {
+  let formId
   DB.createForm(req.body)
-    .then(() => {
-      res.send(201);
+    .then((response) => {
+      formId = response.ops[0]._id
+      res.send(formId);
     })
     .catch(err => {
       console.error(err);
@@ -309,11 +311,15 @@ app.post('/createForm', (req, res) => {
     });
 })
 
-
-
-
 app.get("/addToForm", (req, res) => {
-  res.send("hello peter")
+  DB.getForm(req.query.formId)
+    .then((response) => {
+      res.send(response)
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).end();
+    });
 })
 
 

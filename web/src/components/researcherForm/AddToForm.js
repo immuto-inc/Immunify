@@ -1,11 +1,15 @@
 import axios from 'axios'
 import React, { Component } from 'react'
 
-export default class AddForm extends Component {
+export default class AddToForm extends Component {
     state = {
         inputType: "text",
         question: "",
+        questionId: -1,
     }
+
+
+
 
     renderSampleInput = () => {
         return (

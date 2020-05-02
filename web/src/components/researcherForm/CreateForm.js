@@ -7,6 +7,7 @@ export default class ResearcherFormNew extends Component {
         title: '',
         author: '',
         institution: '',
+        currentSize: 0,
     }
 
     createForm = async (event) => {
@@ -16,12 +17,15 @@ export default class ResearcherFormNew extends Component {
             title: this.state.title,
             author: this.state.author,
             institution: this.state.institution,
+            currentSize: this.state.currentSize,
         }
+
+        let formId
 
         await axios.post("http://localhost:8001/createForm", data)
             .then((res) => {
-                console.log(res)
-
+                formId = res.data
+                // FIX - This id should be added to the authors list of studies so that it can later be retrieved
             })
             .catch((err) => {
                 console.error(err)
@@ -59,7 +63,7 @@ export default class ResearcherFormNew extends Component {
 
                     <button onClick={this.createForm}>Create Form</button>
 
-                    <Link to="/createForm">Let me build the form (testing purposes only) </Link>
+                    <Link to="/addToForm/:formId">Let me build the form (testing purposes only) </Link>
                 </form>
             </div>
         )
