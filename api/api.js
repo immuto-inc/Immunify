@@ -35,11 +35,7 @@ app.get('/', (req, res) => res.status(200).end("API Online!"));
 
 
 /********************************* MIDDLEWARE *********************************/
-const ROUTE_VALIDATION = { // may be worth changing from const to let, vvvvv
-    '/register-org-user': { // may be worth adding individually before each route
-        'email': valid.VALIDATE_EMAIL
-    }
-}
+let ROUTE_VALIDATION = {}
 function validateInput(req, res, next) {
     const path = req.path
     let validators = ROUTE_VALIDATION[path]
@@ -89,7 +85,7 @@ function validateInput(req, res, next) {
 }
 
 function requireAuth(req, res, next) {
-  const authToken = auth.get_auth_token()
+  const authToken = auth.get_auth_token(req)
   if (!valid.is_valid_authToken(authToken)) {
     res.status(401).end("Invalid authentication token")
     return
@@ -101,7 +97,7 @@ function requireAuth(req, res, next) {
       res.status(400).end("No user info exists");
       return;
     }
-    
+    req.session = userInfo
     next()
   }).catch((err) => {
       console.error(err)
@@ -114,6 +110,23 @@ app.use(cors({
 }))
 
 /************************************ API *************************************/
+app.get('/user-info', requireAuth, (req, res) => {
+  DB.get_user_info(req.session.email)
+  .then(userInfo => res.json(userInfo))
+  .catch(err => {
+    console.error(err)
+    res.status(500).end("Failed to get user information")
+  })
+})
+
+
+
+
+// Registration and auth
+
+ROUTE_VALIDATION['/register-org-user'] = { // may be worth adding individually before each route
+  'email': valid.VALIDATE_EMAIL
+}
 app.post("/register-org-user", validateInput, (req, res) => {
   let email = req.validated.email;
 
@@ -182,7 +195,6 @@ app.post("/login-user", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-    console.log("logout post")
     auth
       .end_user_session(req)
       .then(() => {

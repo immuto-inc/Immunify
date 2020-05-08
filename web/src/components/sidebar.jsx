@@ -66,7 +66,7 @@ const Sidebar = ({activeLink}) => {
 
               <hr className="sidebar-divider mt-0 mb-1"/>
 
-              <div className="navGroup">
+              <div className="navGroup ">
                   <li className="nav-item">
                     <Link className={linkClass('/dashboard')} to="/dashboard">
                     <div className="sidebarIconWrapper">

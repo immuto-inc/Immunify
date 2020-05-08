@@ -24,6 +24,7 @@ import Sidebar from "./components/sidebar"
 
 function App() {
   const [authToken, setAuthToken] = useState("")
+  const [userInfo, setUserInfo] = useState(undefined)
 
   return (
     <Router>
@@ -44,7 +45,7 @@ function App() {
         <Route exact path="/dashboard">
             <div>     
             <Sidebar activeLink='/dashboard'/> 
-            <Dashboard authToken={authToken}/>
+            <Dashboard authToken={authToken} userInfo={userInfo} setUserInfo={setUserInfo}/>
             </div>
         </Route> 
         <Route exact path="/surveys">
