@@ -25,7 +25,7 @@ const Dashboard = ({authToken, userInfo}) => {
     return (
       <Container fluid> 
         <PageTitle pageName="Dashboard"/>        
-        <SurveyForm/>      
+        <SurveyForm formContent="blah blah blah"/>      
       </Container>
     );
   }

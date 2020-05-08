@@ -1,0 +1,54 @@
+
+
+.checkfield {
+/*    background-color: gray;
+*/}
+
+.custom-check {
+    content: "";
+    height: 28px;
+    width: 28px;
+    background-color: white;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.custom-check.checked::after {
+    content: "";
+    margin-left: 7px;
+    margin-top: 7px;
+    height: 14px;
+    width: 14px;
+    background-color: #216FB9cd;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.form-check {
+    background-color: #45454544;
+    color: #232323;
+    font-weight: 600;
+    border-radius: 25px;
+    padding: .5rem 0px;
+    padding-left: 10px; /* To include actual checkbox in background */
+    cursor: pointer;
+
+    /* Avoid text highlight */
+      -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; 
+}
+
+.form-check.checked {
+    background-color: #216FB9 !important;
+    color: #ffffff;
+    box-shadow: 1px 2px 5px 1px #888888;
+}
+
+.checkfield input {
+    display: none;
+}
