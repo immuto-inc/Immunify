@@ -4,7 +4,7 @@ import { Link } from "react-router-dom"
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { 
-    faHome, 
+    faList, 
     faClipboardList, 
     faSignOutAlt,
     faUser,
@@ -70,7 +70,7 @@ const Sidebar = ({activeLink}) => {
                   <li className="nav-item">
                     <Link className={linkClass('/dashboard')} to="/dashboard">
                     <div className="sidebarIconWrapper">
-                      <FontAwesomeIcon icon={faHome} size={iconSize}/>
+                      <FontAwesomeIcon icon={faList} size={iconSize}/>
                       </div>
                       <span className="sidebarTitle">Dashboard</span>
                     </Link>

@@ -1,7 +1,7 @@
 import React from "react";
 
 const PageTitle = ({pageName, actionButton, crumbs}) => {
-    let title = pageName ? `Immuto | ${pageName}` : "Immuto"
+    let title = pageName ? `Immunify | ${pageName}` : "Immuto"
     if (!pageName) {
         pageName = "Dashboard"
     }
