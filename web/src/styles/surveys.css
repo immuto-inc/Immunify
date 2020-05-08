@@ -52,3 +52,54 @@
 .checkfield input {
     display: none;
 }
+
+
+
+
+.survey-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.survey-subtitle {
+    font-size: 1.1rem;
+}
+
+.survey-header-title {
+    font-size: .8rem;
+}
+
+.survey-header-value {
+    font-size: 2rem;
+    color: #216FB9;
+    font-weight: 700;
+}
+
+.survey-progress {
+    height: 7px;
+}
+
+.question-number {
+    margin-bottom: 10px;
+}
+.question-number .big {
+    font-size: 2rem;
+    font-weight: 700;
+    border-bottom: 4px solid #21a1da;
+}
+.question-number .small {
+    font-size: 1.25rem;
+}
+
+.question-complete-icon {
+    color: #454545ab;
+}
+
+
+.question-complete-icon.completed {
+    color: #17AC80;
+}
+
+.question-text {
+    font-size: 1.25rem;
+}
