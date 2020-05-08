@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { 
     Container, 
 } from "react-bootstrap";
@@ -6,7 +6,6 @@ import { useHistory } from "react-router-dom"
 
 import PageTitle from "../components/page_title"
 import SurveyForm from "../components/survey_views"
-
 
 const Dashboard = ({authToken, userInfo}) => {
   let history = useHistory()  

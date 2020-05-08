@@ -317,14 +317,14 @@ function user_logged_in_immuto(authToken) {
     http.open("POST", IMMUTO_HOST + "/verify-user-authentication", true);
     http.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     http.onreadystatechange = () => {
-      if (http.readyState == 4 && http.status == 200) {
+      if (http.readyState === 4 && http.status === 200) {
         try {
           let userInfo = JSON.parse(http.responseText);
           resolve(userInfo);
         } catch (err) {
           reject(err);
         }
-      } else if (http.readyState == 4) {
+      } else if (http.readyState === 4) {
         let response = {
           responseText: http.responseText,
           code: http.status

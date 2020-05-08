@@ -6,9 +6,8 @@ import {
     // Link,
     // Redirect
 } from "react-router-dom";
-import './App.css';
-import './theme.scss';
-import './styles/dashboard.css'
+import './theme.scss'; // includes bootstrap
+import './styles/dashboard.css' // for sidebar formatting mostly
 
 import Homepage from "./pages/homepage"
 import Login from "./pages/login"
@@ -18,6 +17,7 @@ import Dashboard from "./pages/dashboard"
 import Surveys from "./pages/surveys"
 import Profile from "./pages/profile"
 import Settings from "./pages/settings"
+import Logout from "./pages/logout"
 
 
 import Sidebar from "./components/sidebar"
@@ -77,6 +77,13 @@ function App() {
             </div>
         </Route> 
 
+
+        <Route exact path="/logout">
+            <div>     
+            <Sidebar activeLink='/logout'/> 
+            <Logout authToken={authToken}/>
+            </div>
+        </Route> 
         </div>
         </div>
       </Switch>
