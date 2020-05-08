@@ -6,22 +6,13 @@ import { useHistory } from "react-router-dom"
 
 import PageTitle from "../components/page_title"
 import SurveyForm from "../components/survey_views"
-import { get_user_info } from "../utils"
 
 
-const Dashboard = ({authToken, userInfo, setUserInfo}) => {
+const Dashboard = ({authToken, userInfo}) => {
   let history = useHistory()  
 
   authToken = authToken || window.localStorage.authToken
   if (!authToken) {history.push('/login');}
-
-  useEffect(() => {
-    if (userInfo) return;
-
-    get_user_info()
-    .then(uInfo => setUserInfo(uInfo))
-    .catch(err => console.error(err))
-  }, [userInfo]);
 
   if (!userInfo) {
     return (

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     BrowserRouter as Router,
     Route,
@@ -22,9 +22,19 @@ import Settings from "./pages/settings"
 
 import Sidebar from "./components/sidebar"
 
+import { get_user_info } from "./utils"
+
 function App() {
-  const [authToken, setAuthToken] = useState("")
+  const [authToken, setAuthToken] = useState(window.localStorage.authToken)
   const [userInfo, setUserInfo] = useState(undefined)
+
+  useEffect(() => { 
+    if (!authToken || userInfo) return;
+
+    get_user_info(authToken) 
+    .then(uInfo => setUserInfo(uInfo))
+    .catch(err => console.error(err))
+  }, [authToken, userInfo]);
 
   return (
     <Router>

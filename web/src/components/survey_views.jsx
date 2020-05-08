@@ -6,7 +6,6 @@ import {
 const SurveyForm = ({formContent}) => {
     if (!formContent) return <div></div>
 
-
     return (
       <Container fluid> 
       </Container>
