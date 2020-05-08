@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, { useState, useEffect } from "react";
 import { 
     Container, 
     Form,
@@ -15,20 +15,44 @@ import {
     faCheckCircle
 } from '@fortawesome/free-solid-svg-icons'
 
-const CheckboxQuestion = ({type, answers}) => {
+const CheckboxQuestion = 
+({type, questionText, answers, questionNumber, totalQuestions, setComplete, setIncomplete}) => {
   answers = answers || []
   type = type || "checkbox"
+  totalQuestions = totalQuestions || 1
+  questionNumber = questionNumber || 1
+  questionText = questionText || "No question text provided"
 
   let defaultState = []
   answers.map(a => {
-    defaultState.push(0)
+    defaultState.push(false)
   })
 
   const [questionState, setQuestionState] = useState(defaultState)
 
   function updateCheckedState(index) {
     questionState[index] = !questionState[index]
+
+    if (type === "radio" && questionState[index] === true) {
+      questionState.map((question, qIndex) => {
+        if (qIndex !== index) {
+          questionState[qIndex] = false
+        }
+      })
+    }
     setQuestionState([...questionState])
+
+    let answersChecked = 0
+    questionState.map(answerChecked => {
+      if (answerChecked) { answersChecked++; }
+    })
+
+    if (answersChecked) {
+      setComplete()
+    } else {
+      setIncomplete();
+    }
+    
   }
 
   function fieldClasses(index) {
@@ -39,9 +63,13 @@ const CheckboxQuestion = ({type, answers}) => {
 
   function questionIconStyle() {
     for (let state of questionState) {
-      if (state) return "completed";
+      if (state) {
+        //setComplete()
+        return "completed"
+      };
     }
 
+    //setIncomplete()
     return ""
   }
 
@@ -50,13 +78,16 @@ const CheckboxQuestion = ({type, answers}) => {
       <div className="question-number"> 
       <FontAwesomeIcon as="span" className={`mr-2 question-complete-icon ${questionIconStyle()}`} icon={faCheckCircle} size="2x" />
       
-      <span className="big">Q1</span> <span className="small">of 4</span> <br/>
-      <p className="question-text mt-1"> Select any countries you've visited in the past 14 days: </p>
+      <span className="big">Q{questionNumber}</span> <span className="small">of {totalQuestions}</span> <br/>
+      <p className="question-text mt-1">{questionText} </p>
       </div>
 
       {answers.map((answer, aIndex) => {
         return (
-        <div id={aIndex} className="checkfield clickable mb-2" onClick={e => updateCheckedState(aIndex)}>
+        <div key={aIndex} 
+             id={aIndex} 
+             className="checkfield clickable mb-2" 
+             onClick={e => updateCheckedState(aIndex)}>
 
         <Form.Check
           className={fieldClasses(aIndex)}
@@ -78,15 +109,32 @@ const CheckboxQuestion = ({type, answers}) => {
   );
 }
 
-const SurveyForm = ({formContent}) => {
-  if (!formContent) return <div></div>
+const SurveyForm = ({questions, communityCompletion, pointValue, timeEstimate}) => {
+  questions = questions || []
+  communityCompletion = communityCompletion || 100
+  pointValue = pointValue || 100
+  timeEstimate = timeEstimate || 2
 
-  let answers = [
-    "Italy", "China", "USA", "Brazil", "None"
-  ]
+  const [surveyCompletion, setSurveyCompletion] = useState([])
 
+  useEffect(() => {   
+    questions.map((question, qIndex) => {
+      surveyCompletion.push(false)
+    })
+  }, []);
+
+  const completionStatus = (currentCompletion) => {
+    let completionCount = 0
+    currentCompletion.map(isCompleted => {
+      if (isCompleted) {completionCount++;}
+    })
+    return (completionCount / questions.length) * 100
+  }
+
+  
+  if (!questions.length) return <div></div>
   return (
-  <div>
+  <div className="card p-4 shadow">
     <div>
       <Row>
       <Col>
@@ -103,34 +151,55 @@ const SurveyForm = ({formContent}) => {
       <Row className="mt-3">
         <Col sm={4} xs={3}>
           <span className="survey-header-item">Community Completion <br/>
-          <span className="survey-header-value"> 100%</span>
+          <span className="survey-header-value"> {communityCompletion}%</span>
           </span>
         </Col>
         <Col>
           <span className="survey-header-item">No. Questions <br/>
-          <span className="survey-header-value">4</span>
+          <span className="survey-header-value">{questions.length}</span>
           </span>
         </Col>
         <Col>
           <span className="survey-header-item">Est. Time <br/>
-          <span className="survey-header-value">2min</span>
+          <span className="survey-header-value">{timeEstimate}min</span>
           </span>
         </Col>
         <Col>
           <span className="survey-header-item">Points <br/>
-          <span className="survey-header-value">100</span>
+          <span className="survey-header-value">{pointValue}</span>
           </span>
         </Col>
       </Row>
       <Row>
       <Col>
-        <ProgressBar className="mt-2 survey-progress" size="sm" now={50} />
+        <ProgressBar className="mt-2 survey-progress" size="sm" now={completionStatus(surveyCompletion)} />
       </Col>
       </Row>
     </div>
-    <div className="mt-5">
+    <div className="">
       <Form>
-        <CheckboxQuestion answers={answers}/>
+        {questions.map((question, qIndex) => {
+          return (
+          <div className="mt-4">
+          <CheckboxQuestion
+            key={qIndex}
+            answers={question.answers} 
+            questionText={question.questionText}
+            questionNumber={qIndex + 1}
+            totalQuestions={questions.length}
+            type={question.type}
+            setComplete={() => {
+              surveyCompletion[qIndex] = true
+              setSurveyCompletion([...surveyCompletion])
+            }}
+            setIncomplete={() => {
+              surveyCompletion[qIndex] = false
+              setSurveyCompletion([...surveyCompletion])
+            }}/>
+          </div>
+          );
+        })}
+        
       </Form>
     </div>
   </div>    
