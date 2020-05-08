@@ -10,8 +10,9 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import Copyright from './copyright'
 import { useHistory } from "react-router-dom"
+
+import Copyright from '../components/copyright'
 
 import { API_URL, IMMUTO_URL } from "../utils";
 
@@ -63,6 +64,10 @@ const Register = () => {
       }
 
       e.preventDefault()
+
+      if (password !== passwordConfirmation) {
+        alert("Passwords must match"); return;
+      }
 
       register_user(email, password).then((result) => {
         history.push('/login')          

@@ -1,0 +1,356 @@
+html {
+  position: relative;
+  min-height: 100%;
+  background-color: #f8f9fc;
+}
+
+body {
+  height: 100%;
+  background-color: #f8f9fc;
+}
+
+#wrapper {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+#wrapper #content-wrapper {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+#wrapper #content-wrapper #main {
+  -webkit-box-flex: 1;
+  -ms-flex: 1 0 auto;
+  flex: 1 0 auto;
+}
+
+
+/* Sidebar and topbar styles */
+/* darkest is #24385D on logom*/
+.bg-gradient-primary-dark {
+  background-color: #105EA8;
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(10%, #105EA8), to(#21a1da));
+  background-image: linear-gradient(180deg,  #105EA8 10%, #21a1da 100%);
+  background-size: cover;
+}
+
+/* The sidebar menu */
+.sidebar {
+  height: 100%; /* Full-height: remove this if you want "auto" height */
+  width: 14rem; /* Set the width of the sidebar */
+  position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+  z-index: 1; /* Stay on top */
+  top: 0; /* Stay at the top */
+  left: 0;
+  background-color: #111; /* Black */
+  overflow-x: hidden; /* Disable horizontal scroll */
+  padding-top: 20px;
+}
+
+/* The navigation menu links */
+.sidebar a {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 0.65rem;
+  color: #818181;
+  display: block;
+}
+
+.topbar {
+  height: 4.5rem;
+  margin-bottom: 0rem;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  padding: 0 0.75rem;
+}
+
+
+/* Style page content */
+#main {
+  margin-left: 14rem !important; /* Same as .sidebar */
+}
+
+hr.sidebar-divider {
+  margin: 1rem 1rem;
+  background-color: #ffffff44;
+}
+
+.topbar-divider {
+  width: 0;
+  border-right: 1px solid #e3e6f0;
+  height: calc(4.375rem - 2rem);
+  margin: auto 1rem;
+}
+
+.sidebar li {
+  margin: 0 1rem 1rem;
+}
+
+.sidebar-brand {
+  height: 2rem !important; 
+  margin-bottom: 1.2rem;
+}
+
+.sidebar-heading {
+  color: #ffffff99;
+  text-transform: uppercase;
+  font-weight: 800;
+  font-size: .85rem;
+  margin-left: 1rem;
+  margin-top: 1rem;
+}
+
+.sidebar .nav-link {
+  color: #ffffff44 !important;
+  margin: 10px 1px;
+}
+ 
+.sidebarTitle {
+  margin-left: 10px;
+  font-size: .95rem;
+  font-weight: 600;
+  color: #ffffffaa;
+}
+
+.sidebar .nav-link.active, .nav-link:hover { /* For icon color */
+  color: white !important;
+}
+
+.sidebar .nav-link:hover span {
+  color: white!important;
+}
+
+.sidebar .nav-link.active span {
+  font-weight: 800;
+  color: #ffffffdd;
+}
+
+.navGroup {
+  display: block;
+  align-content: center;
+  justify-content: center;
+}
+
+.sidebarIconWrapper {
+  display: inline;
+}
+
+#account-dropdown, #inbox-dropdown {
+   display: flex;
+  -webkit-box-flex: 1;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+}
+
+#inboxIcon, #account-dropdown-toggle {
+  display: flex;
+  -webkit-box-flex: 1;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  border-color: white;
+  color: #454545aa !important;
+}
+#inboxIcon:hover, #account-dropdown-toggle:hover {
+  color: #454545ff !important;
+}
+#messages-badge {
+  -webkit-transform: scale(0.925);
+  transform: scale(0.925);
+  -webkit-transform-origin: top right;
+  transform-origin: top right;
+  right: .525rem;
+  top: -.85rem;
+}
+
+.dropdown-toggle::after {
+  display: none;
+}
+
+.topbar #sidebarToggleTop {
+  height: 2.5rem;
+  width: 2.5rem;
+}
+
+.topbar #sidebarToggleTop:hover {
+  background-color: #eaecf4;
+}
+
+.topbar #sidebarToggleTop:active {
+  background-color: #dddfeb;
+}
+
+/* Auto-collapse sidebar is tricky with toggler */
+/*@media (max-width: 600px) {
+  .sidebar {
+    width: 0rem !important;
+  }
+  #main {
+    margin-left: 0rem !important; 
+  }
+  #footer {
+    margin-left: 0rem;
+  }
+}*/
+
+
+
+.sidebar.no-sidebar {
+  width: 0rem !important;
+}
+
+.animate-margin {
+  transition: margin 800ms;
+}
+
+#footer.animate-margin {
+  transition: width 800ms;
+}
+
+#main.no-sidebar {
+  margin-left: 0rem !important; /* Same as .sidebar */
+}
+
+/* End Sidebar and topbar styles */
+
+.fa-xl {
+  font-size: 1.7em;
+}
+
+.hidden {
+  display: none;
+}
+
+.text-gray {
+  color: #232323cc !important;
+}
+
+.text-gray-dark {
+  color: #232323ff !important;
+}
+
+.text-gray-fade {
+  color: #232323aa !important;
+}
+
+.bold: {
+  font-weight: 800 !important;
+}
+
+.bottom-right {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+}
+
+.clickable {
+  opacity: 0.8;
+  cursor: pointer !important;
+}
+
+.clickable:hover {
+  opacity: 1;
+  -webkit-transform: translateY(-2px);
+          transform: translateY(-2px);
+}
+
+.clickable-no-transform:hover {
+  cursor: pointer !important;
+}
+
+.content-center {
+  display: flex;
+  -webkit-box-flex: 1;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+}
+
+.width-fixed-sm {
+  width: 10rem !important;
+}
+
+.width-fixed-xs {
+  width: 2rem !important;
+}
+
+.font-weight-500 {
+  font-weight: 500;
+}
+
+.font-weight-600 {
+  font-weight: 600;
+}
+
+.font-weight-700 {
+  font-weight: 700;
+}
+
+.rounded-sm {
+  border-radius: 10px;
+}
+
+body {
+  margin-bottom: 100px; /* Margin bottom by footer height */
+}
+
+#footer { 
+  position: absolute;
+  bottom: 0;
+  width: calc(100% - 14rem); /* 100% - sidebar width */
+  height: 100px; /* Set the fixed height of the footer here */
+}
+
+#footer.no-sidebar {
+  width: 100% !important;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 6.5rem !important;
+  }
+  #main {
+    margin-left: 6.5rem !important; /* Same as .sidebar */
+  }
+  #footer {
+    width: calc(100% - 6.5rem);
+  }
+
+  .sidebar.nav-item {
+    -webkit-box-flex: 1;
+    text-align: center;
+    align-items: center;
+  }
+
+  .sidebar.nav-item span {
+    text-align: center !important;
+  }
+
+  .sidebarTitle {
+    font-size: .75rem;
+    text-align: center !important;
+    margin-left: 0;
+    display: block;
+  }
+
+  .sidebarIconWrapper {
+    display: block;
+    margin-bottom: 5px;
+    text-align: center;
+  }
+
+  .sidebar-heading {
+    font-size: .7rem;
+    text-align: center;
+    margin-left: 0;
+    margin-bottom: 10px;
+  }
+}

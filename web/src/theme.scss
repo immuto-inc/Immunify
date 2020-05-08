@@ -1,0 +1,55 @@
+$primary: #21a1da;
+$background: #f8f9fc;
+$info: #17AC80;
+
+$theme-colors: (
+    "primary": $primary,
+    "secondary": #858796,
+    "info": $info,
+    "success": #28a745,
+    "warning": #ffc107,
+    "danger": #dc3545,
+    "dark": #343a40,
+    "light": #f8f9fa,
+    "muted": #f8f9fa,
+    "white": #ffffff,
+    "purple": #6f42c1, 
+    "background": $background,
+);
+
+
+/* Add border-left-$color and border-right-$color, from start-bootstrap */
+@each $color, $value in $theme-colors {
+  @each $position in ['left', 'right', 'bottom', 'top'] {
+    .border-#{$position}-#{$color} {
+      border-#{$position}: .25rem solid $value !important;
+    }
+  }
+}
+
+@each $color, $value in $theme-colors {
+    .border-#{$color} {
+      border: .1rem solid $value !important;
+    }
+}
+
+$breadcrumb-divider: quote(">");
+
+.dropzone {
+  height: 10rem;
+  border: dashed 1px;
+  border-radius: 10px;
+  background-color: $background;
+}
+
+.dropzone:hover {
+    cursor: pointer;
+}
+
+.dropzone.dragover, .dropzone:hover {
+  border: solid 2px;
+  border-color: $primary;
+}
+
+/* import bootstrap to set changes */
+@import "~bootstrap/scss/bootstrap.scss";
