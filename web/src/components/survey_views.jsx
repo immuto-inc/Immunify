@@ -5,7 +5,8 @@ import {
     Row,
     Col,
     ProgressBar,
-    Button
+    Button,
+    Spinner
 } from "react-bootstrap";
 
 import "../styles/surveys.css"
@@ -147,14 +148,20 @@ setComplete, setIncomplete, setSelectedValue}) => {
 
 }
 
-const SurveyForm = ({questions, communityCompletion, pointValue, timeEstimate, handleSubmit}) => {
+const SurveyForm = (
+  {questions, communityCompletion, pointValue, timeEstimate, handleSubmit, privacyNotice, submitted}) => {
   questions = questions || []
   communityCompletion = communityCompletion || 100
   pointValue = pointValue || 100
   timeEstimate = timeEstimate || 2
+  submitted = submitted || false
+  privacyNotice = privacyNotice || <div>Your responses to this survey will be kept completely private by default <br/>
+  Later, you may choose to share select information with healthcare providers or researchers</div>
 
   const [surveyCompletion, setSurveyCompletion] = useState([])
   const [surveyValues, setSurveyValues] = useState([])
+  const [submitText, setSubmitText] = useState('Submit')
+  const [handleingSubmit, setHandleingSubmit] = useState(false)
 
   useEffect(() => {   
     questions.map((question, qIndex) => {
@@ -173,6 +180,16 @@ const SurveyForm = ({questions, communityCompletion, pointValue, timeEstimate, h
 
   function handleSurveySubmit(e) {
     e.preventDefault()
+    setSubmitText(<span><Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                    className="mr-2"
+                  />
+                  Submitting...</span>)
+    setHandleingSubmit(true)
     handleSubmit(surveyValues)
   }
   
@@ -221,10 +238,13 @@ const SurveyForm = ({questions, communityCompletion, pointValue, timeEstimate, h
       </Row>
     </div>
     <div className="overflow-auto"> {/*For scrolling*/}
+      <div className="my-2 text-info privacy-notice">
+      {privacyNotice}
+      </div>
       <Form onSubmit={handleSurveySubmit}>
         {questions.map((question, qIndex) => {
             return (
-            <div className="mt-3">
+            <div className="mt-3" key={qIndex}>
             <CheckboxQuestion
               key={qIndex}
               answers={question.answers} 
@@ -249,9 +269,9 @@ const SurveyForm = ({questions, communityCompletion, pointValue, timeEstimate, h
           );
         })}
         <Button className="float-right" 
-                disabled={completionStatus(surveyCompletion) < 99} 
+                disabled={completionStatus(surveyCompletion) < 99 || handleingSubmit} 
                 type="submit"> 
-                Submit 
+                {submitText} 
         </Button>
       </Form>
     </div>

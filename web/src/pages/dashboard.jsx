@@ -63,6 +63,8 @@ const Dashboard = ({authToken, userInfo}) => {
       <Container fluid> 
         <PageTitle pageName="Dashboard"/>        
         <SurveyForm questions={oboardingQuestions}
+                    timeEstimate="1"
+                    pointValue="100"
                     handleSubmit={responses => {
                       console.log(responses)
                     }}
