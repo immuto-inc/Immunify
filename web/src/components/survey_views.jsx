@@ -61,6 +61,8 @@ const CheckboxQuestion =
   }
 
   function questionIconStyle() {
+    if (inputText) return "completed"; // for text forms
+
     for (let state of questionState) {
       if (state) {
         return "completed"
