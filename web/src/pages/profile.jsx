@@ -55,7 +55,8 @@ const Profile = ({authToken, userInfo, profileInfo}) => {
             Location (ZIP): {profileInfo[2]}
           </Card.Text>
           <Card.Text className="text-purple">
-            Your demographic information is kept completely private by default.
+            Your demographic information is kept completely private by default. <br/>
+            End-to-end encryption ensures that only you are able to see this information.
           </Card.Text>
         </Card.Body>
       </Card>
