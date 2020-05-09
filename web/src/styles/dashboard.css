@@ -9,6 +9,10 @@ body {
   background-color: #f8f9fc;
 }
 
+.page-title {
+  font-weight: 400;
+}
+
 #wrapper {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -39,7 +43,7 @@ body {
 /* The sidebar menu */
 .sidebar {
   height: 100%; /* Full-height: remove this if you want "auto" height */
-  width: 14rem; /* Set the width of the sidebar */
+  width: 12rem; /* Set the width of the sidebar */
   position: fixed; /* Fixed Sidebar (stay in place on scroll) */
   z-index: 1; /* Stay on top */
   top: 0; /* Stay at the top */
@@ -73,7 +77,7 @@ body {
 
 /* Style page content */
 #main {
-  margin-left: 14rem !important; /* Same as .sidebar */
+  margin-left: 12rem !important; /* Same as .sidebar */
 }
 
 hr.sidebar-divider {
@@ -305,7 +309,7 @@ body {
 #footer { 
   position: absolute;
   bottom: 0;
-  width: calc(100% - 14rem); /* 100% - sidebar width */
+  width: calc(100% - 12rem); /* 100% - sidebar width */
   height: 100px; /* Set the fixed height of the footer here */
 }
 
