@@ -1,12 +1,14 @@
 import React from "react";
 import { 
     Container, 
+    Row,
+    Col
 } from "react-bootstrap";
 import { useHistory } from "react-router-dom"
 
 import PageTitle from "../components/page_title"
 import SurveyForm from "../components/survey_views"
-
+import { SurveyCard } from "../components/card_views"
 
 import { API_URL, IMMUTO_URL } from "../utils";
 import immuto from "../immuto"
@@ -70,8 +72,22 @@ function store_demographics_for_user(recordID) {
   })  
 }
 
-const Dashboard = ({authToken, userInfo}) => {
+const Dashboard = ({authToken, userInfo, outstandingSurveys}) => {
   let history = useHistory()  
+  outstandingSurveys = outstandingSurveys || [
+    {
+      title: "Daily COVID Check-in",
+      type: "medical",
+      sponsor: "Immunify",
+      description: "A short survey for COVID-19 related symptoms"
+    },
+    {
+      title: "Daily Mood Check-in",
+      type: "mental",
+      sponsor: "Immunify",
+      description: "A short survey for tracking your mood and mental well-being"
+    }
+  ]
 
   authToken = authToken || window.localStorage.authToken
   if (!authToken) {history.push('/login');}
@@ -125,7 +141,23 @@ const Dashboard = ({authToken, userInfo}) => {
   return (
     <Container fluid> 
       <PageTitle pageName="Dashboard" score={userInfo.score}/>   
-      Thanks for completing your onboarding survey!     
+      {userInfo.score === 100 ? "Thanks for completing your onboarding survey!" : ""}
+      <Row xs={1} sm={1} md={2} lg={2} xl={3} className="mt-4">
+          {outstandingSurveys.map((survey) => {
+              let title = unescape(survey.title)
+              let description = unescape(survey.description)
+              let type = unescape(survey.type)
+              let sponsor = unescape(survey.sponsor)
+              let _id = survey._id
+
+              return (
+                  <Col key={_id} className="mb-4" onClick={(e) => {return e}}> 
+                  <SurveyCard title={title} description={description} type={type} sponsor={sponsor}/>
+                  </Col>
+              );
+          })}
+
+      </Row>    
     </Container>
   );
 }

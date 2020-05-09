@@ -6,7 +6,7 @@ import { useHistory } from "react-router-dom"
 
 import PageTitle from "../components/page_title"
 
-const Surveys = ({authToken, userInfo}) => {
+const Surveys = ({authToken, userInfo, profileInfo}) => {
   let history = useHistory()  
 
   authToken = authToken || window.localStorage.authToken
@@ -26,7 +26,7 @@ const Surveys = ({authToken, userInfo}) => {
 
   return (
       <Container fluid> 
-        <PageTitle pageName="Surveys"/>        
+        <PageTitle pageName="Surveys" score={userInfo.score}/>        
       </Container>
   );
 }
