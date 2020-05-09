@@ -22,17 +22,32 @@ import Logout from "./pages/logout"
 
 import Sidebar from "./components/sidebar"
 
-import { get_user_info } from "./utils"
+import { get_user_info, IMMUTO_URL } from "./utils"
+import immuto from "./immuto"
+export const im = immuto.init(true, IMMUTO_URL);
 
 function App() {
   const [authToken, setAuthToken] = useState(window.localStorage.authToken)
   const [userInfo, setUserInfo] = useState(undefined)
+  const [profileInfo, setProfileInfo] = useState(undefined)
 
   useEffect(() => { 
     if (!authToken || userInfo) return;
 
     get_user_info(authToken) 
-    .then(uInfo => setUserInfo(uInfo))
+    .then(uInfo => { 
+        setUserInfo(uInfo) 
+        if (uInfo.profileInfo) {
+            let profileRecordID = uInfo.profileInfo
+            let userPassword = window.localStorage.password
+            im.download_file_for_recordID(profileRecordID, userPassword, true)
+            .then((fileInfo) => {
+                let demographicData = JSON.parse(fileInfo.data)
+                setProfileInfo(demographicData)
+            })
+            .catch(err => console.error(err))
+        }
+    })
     .catch(err => console.error(err))
   }, [authToken, userInfo]);
 
@@ -55,25 +70,25 @@ function App() {
         <Route exact path="/dashboard">
             <div>     
             <Sidebar activeLink='/dashboard'/> 
-            <Dashboard authToken={authToken} userInfo={userInfo}/>
+            <Dashboard authToken={authToken} profileInfo={profileInfo} userInfo={userInfo}/>
             </div>
         </Route> 
         <Route exact path="/surveys">
             <div>     
             <Sidebar activeLink='/surveys'/> 
-            <Surveys authToken={authToken} userInfo={userInfo}/>
+            <Surveys authToken={authToken} profileInfo={profileInfo} userInfo={userInfo}/>
             </div>
         </Route> 
         <Route exact path="/profile">
             <div>     
             <Sidebar activeLink='/profile'/> 
-            <Profile authToken={authToken} userInfo={userInfo}/>
+            <Profile authToken={authToken} profileInfo={profileInfo} userInfo={userInfo}/>
             </div>
         </Route> 
         <Route exact path="/settings">
             <div>     
             <Sidebar activeLink='/settings'/> 
-            <Settings authToken={authToken} userInfo={userInfo}/>
+            <Settings authToken={authToken} profileInfo={profileInfo} userInfo={userInfo}/>
             </div>
         </Route> 
 

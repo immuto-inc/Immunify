@@ -74,6 +74,7 @@ function validateInput(req, res, next) {
     try {
         validatedParams = valid.run_validation(params, validators)
     } catch(err) {
+      console.log("Error in validation")
         res.status(400).end(err)
         return
     }
@@ -94,9 +95,17 @@ function requireAuth(req, res, next) {
   auth.user_logged_in(req)
   .then(userInfo => {
     if (!userInfo) {
+      console.log("Error in require auth")
       res.status(400).end("No user info exists");
       return;
     }
+    if (req.body.authToken) { // to prevent hangups in validation
+      delete req.body.authToken
+    }
+    if (req.query.authToken) { // to prevent hangups in validation
+        delete req.query.authToken
+    }
+
     req.session = userInfo
     next()
   }).catch((err) => {
@@ -119,6 +128,17 @@ app.get('/user-info', requireAuth, (req, res) => {
   })
 })
 
+ROUTE_VALIDATION['/set-profile-info'] = { // may be worth adding individually before each route
+  'recordID': valid.VALIDATE_RECORD_ID
+}
+app.post('/set-profile-info', requireAuth, validateInput, (req, res) => {
+  DB.set_profile_info(req.session.email, req.validated.recordID)
+  .then(result => res.status(204).end())
+  .catch(err => {
+    console.error(err)
+    res.status(500).end("Failed to set user profile information")
+  })
+})
 
 
 

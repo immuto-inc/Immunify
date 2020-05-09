@@ -104,3 +104,26 @@ exports.get_user_info = (userEmail) => {
         })
     })
 }
+
+exports.set_profile_info = (userEmail, recordID) => {
+    return new Promise((resolve, reject) => {
+        let update = { $set: {profileInfo: recordID} }
+        let query = {email: userEmail, profileInfo: { $exists: false} }
+        DB.collection("users").updateOne(query, update, (err, userInfo) => {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(userInfo)
+            }
+        })
+    })
+}
+
+
+
+
+
+
+
+
+

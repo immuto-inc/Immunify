@@ -64,6 +64,7 @@ const Login = ({setAuthToken} : {setAuthToken : Dispatch<SetStateAction<string>>
     }
 
     im.authenticate(email, password).then((authToken : string) => {
+      window.localStorage.password=password
         create_user_session(authToken).then(() => {
           setAuthToken(authToken)
           history.push('/dashboard')          

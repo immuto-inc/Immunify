@@ -7,6 +7,11 @@ import { useHistory } from "react-router-dom"
 import PageTitle from "../components/page_title"
 import SurveyForm from "../components/survey_views"
 
+
+import { API_URL, IMMUTO_URL } from "../utils";
+import immuto from "../immuto"
+export const im = immuto.init(true, IMMUTO_URL);
+
 const oboardingQuestions = [
   {
     questionText: "Select your age range",
@@ -44,6 +49,27 @@ const oboardingQuestions = [
   },
 ]
 
+function store_demographics_for_user(recordID) {
+  return new Promise( async (resolve, reject) => {
+    let url = API_URL + "/set-profile-info"
+    url += "?authToken=" + window.localStorage.authToken
+
+    try {
+      const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({recordID}) // body data type must match "Content-Type" header
+      });
+      if (response.ok) resolve(response)
+      else reject(response)
+    } catch(err) {
+      reject(err)
+    }
+  })  
+}
+
 const Dashboard = ({authToken, userInfo}) => {
   let history = useHistory()  
 
@@ -66,7 +92,30 @@ const Dashboard = ({authToken, userInfo}) => {
                     timeEstimate="1"
                     pointValue="100"
                     handleSubmit={responses => {
-                      console.log(responses)
+                      let responseString = JSON.stringify(responses)
+                      let userPassword = window.localStorage.password
+                      im.create_data_management(responseString, "Demographic Survey", "editable", userPassword, "")
+                      .then(recordID => {
+                        im.upload_file_for_record({name: "Demographic Survey", type: "text/plain"}, responseString, recordID, userPassword)
+                        .then(done => {
+                          store_demographics_for_user(recordID)
+                          .then(success => {
+                            window.location.reload()
+                          })
+                          .catch(err => {
+                            console.error(err)
+                            alert("Failed to store profile information with Immunify")
+                          })
+                        })  
+                        .catch(err => {
+                          console.error(err)
+                          alert("Failed to upload encrypted response")
+                        })
+                      })  
+                      .catch(err => {
+                        console.error(err)
+                        alert("Failed blockchain transaction while submitting survey: " + err)
+                      })
                     }}
                     />      
       </Container>

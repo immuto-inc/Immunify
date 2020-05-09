@@ -85,6 +85,18 @@ exports.VALIDATE_EMAIL = exports.build_validator(
         shouldTruncate: false,
         isOptional: false
     })
+exports.VALIDATE_RECORD_ID = exports.build_validator(
+    (recordID) => {
+        if (!exports.is_valid_address(recordID)) {
+            throw new Error("Invalid recordID")
+        }
+
+        return recordID 
+    }, 
+    {
+        maxLength: 100,
+        isOptional: false
+    })
 
 
 /************************** Generic validation checks *************************/
@@ -104,6 +116,14 @@ exports.is_valid_authToken = (authToken) => {
     return validator.isHexadecimal(authToken)
 }  
 
+exports.is_valid_address = (address) => {
+    if (!address) return false;
+
+    return (
+        validator.isHexadecimal(address) &&
+        (address.length == 42 || address.length == 40)
+    )
+}
 
 
 

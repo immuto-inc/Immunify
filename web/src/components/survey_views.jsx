@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { 
-    Container, 
     Form,
     Row,
     Col,
@@ -28,7 +27,7 @@ setComplete, setIncomplete, setSelectedValue}) => {
 
   let defaultState = []
   answers.map(a => {
-    defaultState.push(false)
+    defaultState.push(false);
   })
 
   const [questionState, setQuestionState] = useState(defaultState)
@@ -168,7 +167,7 @@ const SurveyForm = (
       surveyCompletion.push(false)
       surveyValues.push('')
     })
-  }, []);
+  });
 
   const completionStatus = (currentCompletion) => {
     let completionCount = 0
