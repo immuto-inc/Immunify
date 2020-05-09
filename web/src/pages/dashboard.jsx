@@ -79,13 +79,15 @@ const Dashboard = ({authToken, userInfo, outstandingSurveys}) => {
       title: "Daily COVID Check-in",
       type: "medical",
       sponsor: "Immunify",
-      description: "A short survey for COVID-19 related symptoms"
+      description: "A short survey for COVID-19 related symptoms",
+      _id: "COVID"
     },
     {
       title: "Daily Mood Check-in",
       type: "mental",
       sponsor: "Immunify",
-      description: "A short survey for tracking your mood and mental well-being"
+      description: "A short survey for tracking your mood and mental well-being",
+      _id: "MOOD"
     }
   ]
 
@@ -151,7 +153,7 @@ const Dashboard = ({authToken, userInfo, outstandingSurveys}) => {
               let _id = survey._id
 
               return (
-                  <Col key={_id} className="mb-4" onClick={(e) => {return e}}> 
+                  <Col key={_id} className="mb-4" onClick={(e) => history.push(`/surveys/${_id}`)}> 
                   <SurveyCard title={title} description={description} type={type} sponsor={sponsor}/>
                   </Col>
               );

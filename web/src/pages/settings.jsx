@@ -36,7 +36,7 @@ const Settings = ({authToken, userInfo, profileInfo}) => {
           </Card.Text>
           <Card.Text className="text-purple">
           There are no email settings to change yet. <br/>In the future, you will be able 
-          to opt-in to survey reminders, weekly progress updates, and more!
+          to opt in to survey reminders, weekly progress updates, and more!
           </Card.Text>
         </Card.Body>
       </Card>

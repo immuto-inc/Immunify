@@ -79,6 +79,12 @@ function App() {
             <Surveys authToken={authToken} profileInfo={profileInfo} userInfo={userInfo}/>
             </div>
         </Route> 
+        <Route exact path="/surveys/:surveyID">
+            <div>     
+            <Sidebar activeLink='/surveys'/> 
+            <Surveys authToken={authToken} profileInfo={profileInfo} userInfo={userInfo}/>
+            </div>
+        </Route> 
         <Route exact path="/profile">
             <div>     
             <Sidebar activeLink='/profile'/> 

@@ -13,7 +13,9 @@ import "../styles/surveys.css"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { 
     faIdCard,
-    faCheckCircle
+    faCheckCircle,
+    faHandHoldingMedical,
+    faNotesMedical
 } from '@fortawesome/free-solid-svg-icons'
 
 const CheckboxQuestion = 
@@ -148,12 +150,19 @@ setComplete, setIncomplete, setSelectedValue}) => {
 }
 
 const SurveyForm = (
-  {questions, communityCompletion, pointValue, timeEstimate, handleSubmit, privacyNotice, submitted}) => {
+  {questions, communityCompletion, pointValue, timeEstimate, 
+    handleSubmit, privacyNotice, submitted,
+    title, sponsor, icon, type}) => {
   questions = questions || []
   communityCompletion = communityCompletion || 100
   pointValue = pointValue || 100
   timeEstimate = timeEstimate || 2
   submitted = submitted || false
+  title = title || "Onboarding Survey"
+  sponsor = sponsor || "Immunify"
+  icon = icon || faIdCard
+  if (type === "medical") icon = faNotesMedical
+  else if (type === "mood") icon = faHandHoldingMedical
   privacyNotice = privacyNotice || <div>Your responses to this survey will be kept completely private by default <br/>
   Later, you may choose to share select information with healthcare providers or researchers</div>
 
@@ -199,11 +208,11 @@ const SurveyForm = (
       <Row>
       <Col>
         <span>
-        <FontAwesomeIcon as="span" className="float-left mr-3 my-auto" icon={faIdCard} size="4x" />
+        <FontAwesomeIcon as="span" className="float-left mr-3 my-auto" icon={icon} size="4x" />
         <span className="align-top">
-          <span className="survey-title mb-0 pb-0"> Onboarding Survey </span>    
+          <span className="survey-title mb-0 pb-0">{title}</span>    
           <br/>
-          <span className="survey-subtitle pt-0 mt-0"> Immunify </span>
+          <span className="survey-subtitle pt-0 mt-0">{sponsor}</span>
         </span>
         </span>
       </Col>
