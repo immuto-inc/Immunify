@@ -1,9 +1,3 @@
-
-
-.checkfield {
-/*    background-color: gray;
-*/}
-
 .custom-check {
     content: "";
     height: 28px;
@@ -54,9 +48,13 @@
 }
 
 
+/* To enable scroll on survey */
 .survey {
     max-height: 90vh;
 }
+
+/* Disable scroll on body */
+html, body {margin: 0; height: 100%; overflow: hidden} 
 
 .survey-title {
     font-size: 1.5rem;
@@ -105,3 +103,13 @@
 .question-text {
     font-size: 1.25rem;
 }
+
+
+
+
+
+
+
+
+
+
