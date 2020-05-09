@@ -7,7 +7,6 @@ import { useHistory } from "react-router-dom"
 import PageTitle from "../components/page_title"
 import SurveyForm from "../components/survey_views"
 
-
 const oboardingQuestions = [
   {
     questionText: "Select your age range",
@@ -63,7 +62,11 @@ const Dashboard = ({authToken, userInfo}) => {
     return (
       <Container fluid> 
         <PageTitle pageName="Dashboard"/>        
-        <SurveyForm questions={oboardingQuestions}/>      
+        <SurveyForm questions={oboardingQuestions}
+                    handleSubmit={responses => {
+                      console.log(responses)
+                    }}
+                    />      
       </Container>
     );
   }

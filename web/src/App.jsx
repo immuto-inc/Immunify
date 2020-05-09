@@ -55,25 +55,25 @@ function App() {
         <Route exact path="/dashboard">
             <div>     
             <Sidebar activeLink='/dashboard'/> 
-            <Dashboard authToken={authToken} userInfo={userInfo} setUserInfo={setUserInfo}/>
+            <Dashboard authToken={authToken} userInfo={userInfo}/>
             </div>
         </Route> 
         <Route exact path="/surveys">
             <div>     
             <Sidebar activeLink='/surveys'/> 
-            <Surveys authToken={authToken}/>
+            <Surveys authToken={authToken} userInfo={userInfo}/>
             </div>
         </Route> 
         <Route exact path="/profile">
             <div>     
             <Sidebar activeLink='/profile'/> 
-            <Profile authToken={authToken}/>
+            <Profile authToken={authToken} userInfo={userInfo}/>
             </div>
         </Route> 
         <Route exact path="/settings">
             <div>     
             <Sidebar activeLink='/settings'/> 
-            <Settings authToken={authToken}/>
+            <Settings authToken={authToken} userInfo={userInfo}/>
             </div>
         </Route> 
 

@@ -4,7 +4,8 @@ import {
     Form,
     Row,
     Col,
-    ProgressBar
+    ProgressBar,
+    Button
 } from "react-bootstrap";
 
 import "../styles/surveys.css"
@@ -16,7 +17,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 
 const CheckboxQuestion = 
-({type, questionText, answers, textInputProps, questionNumber, totalQuestions, setComplete, setIncomplete}) => {
+({type, questionText, answers, textInputProps, questionNumber, totalQuestions,
+setComplete, setIncomplete, setSelectedValue}) => {
   answers = answers || []
   type = type || "checkbox"
   totalQuestions = totalQuestions || 1
@@ -43,11 +45,16 @@ const CheckboxQuestion =
     }
     setQuestionState([...questionState])
 
+    let selectedAnswers = []
     let answersChecked = 0
-    questionState.map(answerChecked => {
-      if (answerChecked) { answersChecked++; }
+    questionState.map((answerChecked, aIndex) => {
+      if (answerChecked) { 
+        selectedAnswers.push(answers[aIndex])
+        answersChecked++; 
+      }
     })
 
+    setSelectedValue(selectedAnswers)
     if (answersChecked) {
       setComplete()
     } else {
@@ -71,7 +78,7 @@ const CheckboxQuestion =
     return ""
   }
 
-  if (type === "radio" || type === "checked"){
+  if (type === "radio" || type === "checkbox"){
     return (
       <div>
         <div className="question-number"> 
@@ -115,13 +122,14 @@ const CheckboxQuestion =
         </div>
         
         <Form.Group controlId="text-input">
-          <Form.Control type="email" 
+          <Form.Control type="text" 
                         placeholder={textInputProps.placeholder} 
                         value={inputText}
                         onChange={(e) => {
                           let validator = textInputProps.validator || (e => {return e})
                           let validatedText = validator(e.target.value)
                           setInputText(validatedText)
+                          setSelectedValue(validatedText)
                           if (validatedText) {
                             setComplete()
                           } else {
@@ -139,17 +147,19 @@ const CheckboxQuestion =
 
 }
 
-const SurveyForm = ({questions, communityCompletion, pointValue, timeEstimate}) => {
+const SurveyForm = ({questions, communityCompletion, pointValue, timeEstimate, handleSubmit}) => {
   questions = questions || []
   communityCompletion = communityCompletion || 100
   pointValue = pointValue || 100
   timeEstimate = timeEstimate || 2
 
   const [surveyCompletion, setSurveyCompletion] = useState([])
+  const [surveyValues, setSurveyValues] = useState([])
 
   useEffect(() => {   
     questions.map((question, qIndex) => {
       surveyCompletion.push(false)
+      surveyValues.push('')
     })
   }, []);
 
@@ -161,6 +171,10 @@ const SurveyForm = ({questions, communityCompletion, pointValue, timeEstimate}) 
     return (completionCount / questions.length) * 100
   }
 
+  function handleSurveySubmit(e) {
+    e.preventDefault()
+    handleSubmit(surveyValues)
+  }
   
   if (!questions.length) return <div></div>
   return (
@@ -207,7 +221,7 @@ const SurveyForm = ({questions, communityCompletion, pointValue, timeEstimate}) 
       </Row>
     </div>
     <div className="overflow-auto"> {/*For scrolling*/}
-      <Form>
+      <Form onSubmit={handleSurveySubmit}>
         {questions.map((question, qIndex) => {
             return (
             <div className="mt-3">
@@ -219,6 +233,10 @@ const SurveyForm = ({questions, communityCompletion, pointValue, timeEstimate}) 
               questionNumber={qIndex + 1}
               totalQuestions={questions.length}
               type={question.type}
+              setSelectedValue={(values) => {
+                surveyValues[qIndex] = values
+                setSurveyValues([...surveyValues])
+              }}
               setComplete={() => {
                 surveyCompletion[qIndex] = true
                 setSurveyCompletion([...surveyCompletion])
@@ -230,7 +248,11 @@ const SurveyForm = ({questions, communityCompletion, pointValue, timeEstimate}) 
             </div>
           );
         })}
-        
+        <Button className="float-right" 
+                disabled={completionStatus(surveyCompletion) < 99} 
+                type="submit"> 
+                Submit 
+        </Button>
       </Form>
     </div>
   </div>    
