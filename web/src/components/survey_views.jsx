@@ -16,7 +16,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 
 const CheckboxQuestion = 
-({type, questionText, answers, questionNumber, totalQuestions, setComplete, setIncomplete}) => {
+({type, questionText, answers, textInputProps, questionNumber, totalQuestions, setComplete, setIncomplete}) => {
   answers = answers || []
   type = type || "checkbox"
   totalQuestions = totalQuestions || 1
@@ -29,6 +29,7 @@ const CheckboxQuestion =
   })
 
   const [questionState, setQuestionState] = useState(defaultState)
+  const [inputText, setInputText] = useState('')
 
   function updateCheckedState(index) {
     questionState[index] = !questionState[index]
@@ -52,61 +53,88 @@ const CheckboxQuestion =
     } else {
       setIncomplete();
     }
-    
   }
 
   function fieldClasses(index) {
     if (!questionState[index]) return "unchecked";
-
-    return "checked"
+    return "checked";
   }
 
   function questionIconStyle() {
     for (let state of questionState) {
       if (state) {
-        //setComplete()
         return "completed"
       };
     }
-
-    //setIncomplete()
     return ""
   }
 
-  return (
-    <div>
-      <div className="question-number"> 
-      <FontAwesomeIcon as="span" className={`mr-2 question-complete-icon ${questionIconStyle()}`} icon={faCheckCircle} size="2x" />
-      
-      <span className="big">Q{questionNumber}</span> <span className="small">of {totalQuestions}</span> <br/>
-      <p className="question-text mt-1">{questionText} </p>
+  if (type === "radio" || type === "checked"){
+    return (
+      <div>
+        <div className="question-number"> 
+        <FontAwesomeIcon as="span" className={`mr-2 question-complete-icon ${questionIconStyle()}`} icon={faCheckCircle} size="2x" />
+        
+        <span className="big">Q{questionNumber}</span> <span className="small">of {totalQuestions}</span> <br/>
+        <p className="question-text mt-1">{questionText} </p>
+        </div>
+  
+        {answers.map((answer, aIndex) => {
+          return (
+          <div key={aIndex} 
+               id={aIndex} 
+               className="checkfield clickable mb-2" 
+               onClick={e => updateCheckedState(aIndex)}>
+  
+          <Form.Check
+            className={fieldClasses(aIndex)}
+            onChange={e => console.log(e.target.checked)}
+            checked={questionState[aIndex]}
+            type={type}
+            label={
+              <span>
+              <span className={`custom-check align-middle ${fieldClasses(aIndex)}`}></span>
+              <span className="align-middle">{answer}</span>
+              </span>
+            }
+            />
+          </div>);
+        })}
       </div>
+    );
+  } else if (type === "text") {
+    return (
+      <div>
+        <div className="question-number"> 
+        <FontAwesomeIcon as="span" className={`mr-2 question-complete-icon ${questionIconStyle()}`} icon={faCheckCircle} size="2x" />
+        
+        <span className="big">Q{questionNumber}</span> <span className="small">of {totalQuestions}</span> <br/>
+        <p className="question-text mt-1">{questionText} </p>
+        </div>
+        
+        <Form.Group controlId="text-input">
+          <Form.Control type="email" 
+                        placeholder={textInputProps.placeholder} 
+                        value={inputText}
+                        onChange={(e) => {
+                          let validator = textInputProps.validator || (e => {return e})
+                          let validatedText = validator(e.target.value)
+                          setInputText(validatedText)
+                          if (validatedText) {
+                            setComplete()
+                          } else {
+                            setIncomplete()
+                          }
+                        }}/>
+          <Form.Text className="text-muted">
+            {textInputProps.message}
+          </Form.Text>
+        </Form.Group>
 
-      {answers.map((answer, aIndex) => {
-        return (
-        <div key={aIndex} 
-             id={aIndex} 
-             className="checkfield clickable mb-2" 
-             onClick={e => updateCheckedState(aIndex)}>
+      </div>
+    );
+  }
 
-        <Form.Check
-          className={fieldClasses(aIndex)}
-          onChange={e => console.log(e.target.checked)}
-          checked={questionState[aIndex]}
-          type={type}
-          label={
-            <span>
-            <span className={`custom-check align-middle ${fieldClasses(aIndex)}`}></span>
-            <span className="align-middle">{answer}</span>
-            </span>
-          }
-          />
-        </div>);
-      })}
-      
-    
-    </div>
-  );
 }
 
 const SurveyForm = ({questions, communityCompletion, pointValue, timeEstimate}) => {
@@ -179,24 +207,25 @@ const SurveyForm = ({questions, communityCompletion, pointValue, timeEstimate}) 
     <div className="">
       <Form>
         {questions.map((question, qIndex) => {
-          return (
-          <div className="mt-4">
-          <CheckboxQuestion
-            key={qIndex}
-            answers={question.answers} 
-            questionText={question.questionText}
-            questionNumber={qIndex + 1}
-            totalQuestions={questions.length}
-            type={question.type}
-            setComplete={() => {
-              surveyCompletion[qIndex] = true
-              setSurveyCompletion([...surveyCompletion])
-            }}
-            setIncomplete={() => {
-              surveyCompletion[qIndex] = false
-              setSurveyCompletion([...surveyCompletion])
-            }}/>
-          </div>
+            return (
+            <div className="mt-4">
+            <CheckboxQuestion
+              key={qIndex}
+              answers={question.answers} 
+              textInputProps={question.inputProps}
+              questionText={question.questionText}
+              questionNumber={qIndex + 1}
+              totalQuestions={questions.length}
+              type={question.type}
+              setComplete={() => {
+                surveyCompletion[qIndex] = true
+                setSurveyCompletion([...surveyCompletion])
+              }}
+              setIncomplete={() => {
+                surveyCompletion[qIndex] = false
+                setSurveyCompletion([...surveyCompletion])
+              }}/>
+            </div>
           );
         })}
         

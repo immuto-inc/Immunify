@@ -15,9 +15,33 @@ const oboardingQuestions = [
     type: "radio"
   },
   {
-    questionText: "Select any countries you've visited in the past 14 days:",
-    answers: ["Italy", "China", "USA", "Brazil", "Germany"],
+    questionText: "Select your sex",
+    answers: ["Male", "Female", "Other"],
     type: "radio"
+  },
+  {
+    questionText: "Enter your ZIP code (or 'NA' for Non-USA)",
+    type: "text",
+    inputProps: {
+      placeholder: "ZIP code",
+      message: "Your location is kept completely private by default",
+      validator: (input) => {
+        try {
+          // handle leading 0 cases
+          let exceptions = ["na", 'n']
+          if (exceptions.includes(input.toLowerCase())) return input
+          for (let e of exceptions) {
+            if (input.toLowerCase().startsWith(e)) return input.substring(0, e.length);
+          }
+
+          let parsed = parseInt(input.substring(0,5), 10)
+          if (parsed) return parsed
+          return ""
+        } catch(err) {
+          return ""
+        }
+      }
+    }
   },
 ]
 
