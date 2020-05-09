@@ -69,6 +69,15 @@ const Surveys = ({authToken, userInfo, profileInfo}) => {
     history.push('/dashboard') // to fill out onboarding form
   }
 
+  if (!survey) {
+    return (
+      <Container fluid> 
+        <PageTitle pageName="Surveys" score={userInfo.score}/> 
+        Survey view goes here
+      </Container>
+    );
+  }
+
   return (
       <Container fluid> 
         <PageTitle pageName="Surveys" score={userInfo.score}/> 
