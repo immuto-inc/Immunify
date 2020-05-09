@@ -107,7 +107,7 @@ exports.get_user_info = (userEmail) => {
 
 exports.set_profile_info = (userEmail, recordID) => {
     return new Promise((resolve, reject) => {
-        let update = { $set: {profileInfo: recordID} }
+        let update = { $set: {profileInfo: recordID}, $inc: { score: 100 } }
         let query = {email: userEmail, profileInfo: { $exists: false} }
         DB.collection("users").updateOne(query, update, (err, userInfo) => {
             if (err) {

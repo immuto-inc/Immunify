@@ -124,7 +124,8 @@ const Dashboard = ({authToken, userInfo}) => {
   
   return (
     <Container fluid> 
-      <PageTitle pageName="Dashboard"/>        
+      <PageTitle pageName="Dashboard" score={userInfo.score}/>   
+      Thanks for completing your onboarding survey!     
     </Container>
   );
 }

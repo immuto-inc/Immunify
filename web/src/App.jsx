@@ -6,8 +6,6 @@ import {
     // Link,
     // Redirect
 } from "react-router-dom";
-import './theme.scss'; // includes bootstrap
-import './styles/dashboard.css' // for sidebar formatting mostly
 
 import Homepage from "./pages/homepage"
 import Login from "./pages/login"
@@ -19,8 +17,10 @@ import Profile from "./pages/profile"
 import Settings from "./pages/settings"
 import Logout from "./pages/logout"
 
-
 import Sidebar from "./components/sidebar"
+
+import './theme.scss'; // includes bootstrap
+import './styles/dashboard.css' // for sidebar formatting mostly
 
 import { get_user_info, IMMUTO_URL } from "./utils"
 import immuto from "./immuto"

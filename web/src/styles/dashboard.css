@@ -359,8 +359,10 @@ body {
   font-size: 1rem;
 }
 
-
-
+.user-score {
+  color: #105EA8;
+  font-weight: bold;
+}
 
 
 

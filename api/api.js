@@ -115,7 +115,7 @@ function requireAuth(req, res, next) {
 }
 
 app.use(cors({
-  origin: ["http://localhost:3000", "https://immunify.herokuapp.com", "https://immunify.us"]
+  origin: ["http://localhost:3000", "http://localhost:8002", "https://immunify.herokuapp.com", "https://immunify.us"]
 }))
 
 /************************************ API *************************************/
