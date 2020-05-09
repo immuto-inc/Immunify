@@ -162,7 +162,7 @@ const SurveyForm = ({questions, communityCompletion, pointValue, timeEstimate}) 
   
   if (!questions.length) return <div></div>
   return (
-  <div className="card p-4 shadow">
+  <div className="card p-4 shadow survey">
     <div>
       <Row>
       <Col>
@@ -199,16 +199,16 @@ const SurveyForm = ({questions, communityCompletion, pointValue, timeEstimate}) 
         </Col>
       </Row>
       <Row>
-      <Col>
+      <Col className="pb-3">
         <ProgressBar className="mt-2 survey-progress" size="sm" now={completionStatus(surveyCompletion)} />
       </Col>
       </Row>
     </div>
-    <div className="">
+    <div className="overflow-auto"> {/*For scrolling*/}
       <Form>
         {questions.map((question, qIndex) => {
             return (
-            <div className="mt-4">
+            <div className="mt-3">
             <CheckboxQuestion
               key={qIndex}
               answers={question.answers} 

@@ -54,7 +54,9 @@
 }
 
 
-
+.survey {
+    max-height: 90vh;
+}
 
 .survey-title {
     font-size: 1.5rem;
