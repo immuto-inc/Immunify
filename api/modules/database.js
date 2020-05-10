@@ -156,7 +156,7 @@ const covidCheckinSurvey = {
                 "Loss of taste or smell",
                 "Muscle aches",
                 "Shortness of breath",
-                "None"
+                "None or Other"
       ],
       type: "checkbox"
     }

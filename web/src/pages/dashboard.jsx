@@ -7,6 +7,7 @@ import { useHistory } from "react-router-dom"
 import PageTitle from "../components/page_title"
 import SurveyForm, { NewSurveysView } from "../components/survey_views"
 import ChartView from "../components/chart_views"
+import ZIPMap from "../components/map_views"
 
 import { API_URL, IMMUTO_URL } from "../utils";
 import immuto from "../immuto"
@@ -85,7 +86,7 @@ const Dashboard = ({authToken, aggregateResults, profileInfo, userInfo, outstand
   if (!userInfo.profileInfo) { // return onboarding survey
     return (
       <Container fluid> 
-        <PageTitle pageName="Dashboard"/>        
+        <PageTitle pageName="Dashboard"/>  
         <SurveyForm questions={oboardingQuestions}
                     timeEstimate="1"
                     pointValue="100"
@@ -138,6 +139,7 @@ const Dashboard = ({authToken, aggregateResults, profileInfo, userInfo, outstand
       <NewSurveysView surveys={outstandingSurveys} 
                       userInfo={userInfo}
                       handleSurveyClick={surveyID => history.push(`/surveys/${surveyID}`)}/>
+      <ZIPMap/>
     </Container>
   );
 }
