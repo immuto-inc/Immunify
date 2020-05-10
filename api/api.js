@@ -74,9 +74,9 @@ function validateInput(req, res, next) {
     try {
         validatedParams = valid.run_validation(params, validators)
     } catch(err) {
-      console.log("Error in validation")
-        res.status(400).end(err)
-        return
+      console.error("Error in validation: " + err)
+      res.status(400).end(err)
+      return
     }
 
     req.query = {} // prevent access to raw user input
@@ -118,6 +118,14 @@ app.use(cors({
   origin: ["http://localhost:3000", "http://localhost:8002", "https://immunify.herokuapp.com", "https://immunify.us"]
 }))
 
+function today_as_string() {
+  let today = new Date();
+  let dd = String(today.getUTCDate()).padStart(2, '0');
+  let mm = String(today.getUTCMonth() + 1).padStart(2, '0'); //January is 0!
+  let yyyy = today.getUTCFullYear();
+  return `${dd}-${mm}-${yyyy}`
+}
+
 /************************************ API *************************************/
 app.get('/user-info', requireAuth, (req, res) => {
   DB.get_user_info(req.session.email)
@@ -125,6 +133,18 @@ app.get('/user-info', requireAuth, (req, res) => {
   .catch(err => {
     console.error(err)
     res.status(500).end("Failed to get user information")
+  })
+})
+
+ROUTE_VALIDATION['/survey-info'] = { // may be worth adding individually before each route
+  'surveyID': valid.VALIDATE_SURVEY_ID,
+}
+app.get('/survey-info', requireAuth, validateInput, (req, res) => {
+  DB.get_survey_info(req.validated.surveyID)
+  .then(surveyInfo => res.json(surveyInfo))
+  .catch(err => {
+    console.error(err)
+    res.status(500).end()
   })
 })
 
@@ -140,7 +160,52 @@ app.post('/set-profile-info', requireAuth, validateInput, (req, res) => {
   })
 })
 
+ROUTE_VALIDATION['/record-survey-response'] = { // may be worth adding individually before each route
+  'recordID': valid.VALIDATE_RECORD_ID,
+  'surveyID': valid.VALIDATE_SURVEY_ID,
+  'surveyResponse': valid.VALIDATE_JSON_10000,
+  'userZIP': valid.VALIDATE_ZIP_OR_NA
+}
+app.post('/record-survey-response', requireAuth, validateInput, async (req, res) => { 
+  let { surveyID, surveyResponse, userZIP } = req.validated
+  surveyResponse = JSON.parse(surveyResponse)
+  const today = today_as_string()
 
+  try {
+    const userInfo = await DB.get_user_info(req.session.email)
+    const surveyInfo = await DB.get_survey_info(surveyID)
+    
+    const lastUpdate = userInfo[surveyID]
+    if (lastUpdate === today) {
+      res.status(400).end("A survey response was already recorded for today");
+      return;
+    }
+
+    surveyResponse.map((responses, rIndex) => {
+      const validAnswers = surveyInfo.questions[rIndex].answers
+      for (let response of responses) {
+        if (!validAnswers.includes(response)) {
+          res.status(400).end(`Invalid response for question ${rIndex + 1}: ${response}`)
+        }
+      }
+    })
+
+    surveyResponse.push(today)
+    surveyResponse.push(userZIP)
+    let update = await DB.add_response_for_survey(surveyID, surveyResponse)
+    let userUpdate = await DB.update_user_response(
+      req.session.email, 
+      surveyID, 
+      today, 
+      surveyInfo.pointValue
+      )
+
+    res.status(204).end()
+  } catch(err) {
+    console.error(err)
+    res.status(500).end()
+  }
+})
 
 // Registration and auth
 

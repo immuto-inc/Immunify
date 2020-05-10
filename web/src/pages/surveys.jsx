@@ -5,7 +5,11 @@ import {
 import { useHistory, useParams } from "react-router-dom"
 
 import PageTitle from "../components/page_title"
-import SurveyForm from "../components/survey_views"
+import SurveyForm, { NewSurveysView } from "../components/survey_views"
+
+import { API_URL, IMMUTO_URL, today_as_string } from "../utils";
+import immuto from "../immuto"
+export const im = immuto.init(true, IMMUTO_URL);
 
 const covidCheckinSurvey = {
   title: "Daily COVID Check-in",
@@ -13,16 +17,27 @@ const covidCheckinSurvey = {
   type: "medical",
   questions: [
     {
-      questionText: "Select your age range",
-      answers: ["18 or younger", "18-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75 or older"],
-      type: "radio"
+      questionText: "Select any symptoms you've experienced within the last 24h",
+      answers: ["Coughing",
+                "Fever",
+                "Loss of taste or smell",
+                "Muscle aches",
+                "Shortness of breath",
+
+      ],
+      type: "checkbox"
     },
     {
-      questionText: "Select your sex",
-      answers: ["Male", "Female", "Other"],
-      type: "radio"
-    }
-  ]
+      questionText: "Select any countries you've visited within the past month",
+      answers: ["USA", 
+                "Brazil", 
+                "Italy", 
+                "China"
+      ],
+      type: "checkbox"
+    },
+  ],
+  identifier: "COVID"
 }
 
 const moodCheckinSurvey = {
@@ -31,16 +46,21 @@ const moodCheckinSurvey = {
   type: "mood",
   questions: [
     {
-      questionText: "Select your age range",
-      answers: ["18 or younger", "18-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75 or older"],
-      type: "radio"
-    },
-    {
-      questionText: "Select your sex",
-      answers: ["Male", "Female", "Other"],
-      type: "radio"
+      questionText: "Select any options which describe today's mood",
+      answers: ["anxiety", 
+                "fear",
+                "gratitude",
+                "happiness", 
+                "loneliness",
+                "positivity", 
+                "sadness", 
+                "stress", 
+                "other",
+      ],
+      type: "checkbox"
     }
-  ]
+  ],
+  identifier: "MOOD"
 }
 
 const initialSurvey = {
@@ -48,7 +68,28 @@ const initialSurvey = {
   "MOOD": moodCheckinSurvey
 }
 
-const Surveys = ({authToken, userInfo, profileInfo}) => {
+function store_survey_results_for_user(recordID, surveyID, surveyResponse, userZIP) {
+  return new Promise( async (resolve, reject) => {
+    let url = API_URL + "/record-survey-response"
+    url += "?authToken=" + window.localStorage.authToken
+
+    try {
+      const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({recordID, surveyID, surveyResponse, userZIP}) // body data type must match "Content-Type" header
+      });
+      if (response.ok) resolve(response)
+      else reject(response)
+    } catch(err) {
+      reject(err)
+    }
+  })  
+}
+
+const Surveys = ({authToken, userInfo, setUserInfo, profileInfo, outstandingSurveys}) => {
   let history = useHistory()  
   const { surveyID } = useParams()
 
@@ -73,7 +114,9 @@ const Surveys = ({authToken, userInfo, profileInfo}) => {
     return (
       <Container fluid> 
         <PageTitle pageName="Surveys" score={userInfo.score}/> 
-        Survey view goes here
+        <NewSurveysView surveys={outstandingSurveys} userInfo={userInfo}
+                        handleSurveyClick={surveyID => history.push(`/surveys/${surveyID}`)}/>
+
       </Container>
     );
   }
@@ -87,20 +130,25 @@ const Surveys = ({authToken, userInfo, profileInfo}) => {
                     timeEstimate={survey.timeEstimate}
                     pointValue={survey.pointValue}
                     type={survey.type}
+                    privacyNotice=' '
                     handleSubmit={responses => {
-                      {/*let responseString = JSON.stringify(responses)
+                      let identifier = survey.identifier || survey._id
+                      let responseString = JSON.stringify(responses)
                       let userPassword = window.localStorage.password
-                      im.create_data_management(responseString, "Demographic Survey", "editable", userPassword, "")
+                      im.create_data_management(responseString, identifier, "editable", userPassword, "")
                       .then(recordID => {
-                        im.upload_file_for_record({name: "Demographic Survey", type: "text/plain"}, responseString, recordID, userPassword)
+                        im.upload_file_for_record({name: identifier, type: "text/plain"}, responseString, recordID, userPassword)
                         .then(done => {
-                          store_demographics_for_user(recordID)
+                          store_survey_results_for_user(recordID, identifier, responseString, profileInfo[2])
                           .then(success => {
-                            window.location.reload()
+                            userInfo.score += survey.pointValue
+                            userInfo[identifier] = today_as_string()
+                            setUserInfo(userInfo)
+                            history.push('/dashboard')
                           })
-                          .catch(err => {
-                            console.error(err)
-                            alert("Failed to store profile information with Immunify")
+                          .catch(errResponse => {
+                            console.error(errResponse)
+                            alert("Failed to record survey response")
                           })
                         })  
                         .catch(err => {
@@ -111,8 +159,8 @@ const Surveys = ({authToken, userInfo, profileInfo}) => {
                       .catch(err => {
                         console.error(err)
                         alert("Failed blockchain transaction while submitting survey: " + err)
-                      })*/}
-                    }}
+                      })}
+                    }
                     />            
       </Container>
   );

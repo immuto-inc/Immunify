@@ -7,8 +7,7 @@ import {
 import { useHistory } from "react-router-dom"
 
 import PageTitle from "../components/page_title"
-import SurveyForm from "../components/survey_views"
-import { SurveyCard } from "../components/card_views"
+import SurveyForm, { NewSurveysView } from "../components/survey_views"
 
 import { API_URL, IMMUTO_URL } from "../utils";
 import immuto from "../immuto"
@@ -74,23 +73,7 @@ function store_demographics_for_user(recordID) {
 
 const Dashboard = ({authToken, userInfo, outstandingSurveys}) => {
   let history = useHistory()  
-  outstandingSurveys = outstandingSurveys || [
-    {
-      title: "Daily COVID Check-in",
-      type: "medical",
-      sponsor: "Immunify",
-      description: "A short survey for COVID-19 related symptoms",
-      _id: "COVID"
-    },
-    {
-      title: "Daily Mood Check-in",
-      type: "mental",
-      sponsor: "Immunify",
-      description: "A short survey for tracking your mood and mental well-being",
-      _id: "MOOD"
-    }
-  ]
-
+  outstandingSurveys = outstandingSurveys || []
   authToken = authToken || window.localStorage.authToken
   if (!authToken) {history.push('/login');}
 
@@ -143,23 +126,9 @@ const Dashboard = ({authToken, userInfo, outstandingSurveys}) => {
   return (
     <Container fluid> 
       <PageTitle pageName="Dashboard" score={userInfo.score}/>   
-      {userInfo.score === 100 ? "Thanks for completing your onboarding survey!" : ""}
-      <Row xs={1} sm={1} md={2} lg={2} xl={3} className="mt-4">
-          {outstandingSurveys.map((survey) => {
-              let title = unescape(survey.title)
-              let description = unescape(survey.description)
-              let type = unescape(survey.type)
-              let sponsor = unescape(survey.sponsor)
-              let _id = survey._id
-
-              return (
-                  <Col key={_id} className="mb-4" onClick={(e) => history.push(`/surveys/${_id}`)}> 
-                  <SurveyCard title={title} description={description} type={type} sponsor={sponsor}/>
-                  </Col>
-              );
-          })}
-
-      </Row>    
+      {userInfo.score === 100 ? "Thanks for completing your onboarding survey! Complete one of the surveys below to unlock community insights." : ""}
+      <NewSurveysView surveys={outstandingSurveys} userInfo={userInfo}
+                      handleSurveyClick={surveyID => history.push(`/surveys/${surveyID}`)}/>
     </Container>
   );
 }

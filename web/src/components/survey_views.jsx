@@ -18,6 +18,10 @@ import {
     faNotesMedical
 } from '@fortawesome/free-solid-svg-icons'
 
+import { SurveyCard } from "./card_views"
+
+import { today_as_string } from "../utils"
+
 const CheckboxQuestion = 
 ({type, questionText, answers, textInputProps, questionNumber, totalQuestions,
 setComplete, setIncomplete, setSelectedValue}) => {
@@ -151,13 +155,12 @@ setComplete, setIncomplete, setSelectedValue}) => {
 
 const SurveyForm = (
   {questions, communityCompletion, pointValue, timeEstimate, 
-    handleSubmit, privacyNotice, submitted,
+    handleSubmit, privacyNotice,
     title, sponsor, icon, type}) => {
   questions = questions || []
   communityCompletion = communityCompletion || 100
   pointValue = pointValue || 100
   timeEstimate = timeEstimate || 2
-  submitted = submitted || false
   title = title || "Onboarding Survey"
   sponsor = sponsor || "Immunify"
   icon = icon || faIdCard
@@ -176,7 +179,7 @@ const SurveyForm = (
       surveyCompletion.push(false)
       surveyValues.push('')
     })
-  });
+  }, []);
 
   const completionStatus = (currentCompletion) => {
     let completionCount = 0
@@ -208,7 +211,7 @@ const SurveyForm = (
       <Row>
       <Col>
         <span>
-        <FontAwesomeIcon as="span" className="float-left mr-3 my-auto" icon={icon} size="4x" />
+        <FontAwesomeIcon as="span" className="float-left mr-3 my-auto text-primary-dark" icon={icon} size="4x" />
         <span className="align-top">
           <span className="survey-title mb-0 pb-0">{title}</span>    
           <br/>
@@ -287,4 +290,60 @@ const SurveyForm = (
   );
 }
 
+const NewSurveysView = ({surveys, handleSurveyClick, userInfo}) => {
+  surveys = surveys || []
+  userInfo = userInfo || {}
+  let today = today_as_string()
+
+  return (
+    <div>
+    <h4 className="mt-4">Today's Surveys</h4>
+
+    <Row xs={1} sm={1} md={2} lg={2} xl={2}>
+        {surveys.map((survey) => {
+            let title = unescape(survey.title)
+            let description = unescape(survey.description)
+            let type = unescape(survey.type)
+            let sponsor = unescape(survey.sponsor)
+            let _id = survey._id
+            let identifier = survey.identifier || _id
+
+            if (userInfo[identifier] === today) return;
+
+            return (
+                <Col key={_id} className="mb-4" onClick={(e) => handleSurveyClick(_id)}> 
+                <SurveyCard title={title} description={description} type={type} sponsor={sponsor}/>
+                </Col>
+            );
+          })}
+      </Row>
+      <hr/> 
+
+    <h4 className="mt-4">Completed Surveys</h4>
+
+    <Row xs={1} sm={1} md={2} lg={2} xl={2}>
+        {surveys.map((survey) => {
+            let title = unescape(survey.title)
+            let description = unescape(survey.description)
+            let type = unescape(survey.type)
+            let sponsor = unescape(survey.sponsor)
+            let _id = survey._id
+            let identifier = survey.identifier || _id
+
+            if (userInfo[identifier] !== today) return;
+
+            return (
+                <Col key={_id} className="mb-4" onClick={(e) => handleSurveyClick(_id)}> 
+                <SurveyCard title={title} description={description} type={type} sponsor={sponsor}/>
+                </Col>
+            );
+          })}
+      </Row>
+      <hr/> 
+
+    </div>
+  );
+}
+
 export default SurveyForm;
+export { NewSurveysView }

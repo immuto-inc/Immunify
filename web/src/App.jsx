@@ -30,6 +30,22 @@ function App() {
   const [authToken, setAuthToken] = useState(window.localStorage.authToken)
   const [userInfo, setUserInfo] = useState(undefined)
   const [profileInfo, setProfileInfo] = useState(undefined)
+  const [outstandingSurveys, setOutstandingSurveys] = useState([
+    {
+      title: "Daily COVID Check-in",
+      type: "medical",
+      sponsor: "Immunify",
+      description: "A short survey for COVID-19 related symptoms",
+      _id: "COVID"
+    },
+    {
+      title: "Daily Mood Check-in",
+      type: "mental",
+      sponsor: "Immunify",
+      description: "A short survey for tracking your mood and mental well-being",
+      _id: "MOOD"
+    }
+  ])
 
   useEffect(() => { 
     if (!authToken || userInfo) return;
@@ -70,19 +86,19 @@ function App() {
         <Route exact path="/dashboard">
             <div>     
             <Sidebar activeLink='/dashboard'/> 
-            <Dashboard authToken={authToken} profileInfo={profileInfo} userInfo={userInfo}/>
+            <Dashboard authToken={authToken} profileInfo={profileInfo} outstandingSurveys={outstandingSurveys} userInfo={userInfo}/>
             </div>
         </Route> 
         <Route exact path="/surveys">
             <div>     
             <Sidebar activeLink='/surveys'/> 
-            <Surveys authToken={authToken} profileInfo={profileInfo} userInfo={userInfo}/>
+            <Surveys authToken={authToken} profileInfo={profileInfo} outstandingSurveys={outstandingSurveys} userInfo={userInfo} setUserInfo={setUserInfo}/>
             </div>
         </Route> 
         <Route exact path="/surveys/:surveyID">
             <div>     
             <Sidebar activeLink='/surveys'/> 
-            <Surveys authToken={authToken} profileInfo={profileInfo} userInfo={userInfo}/>
+            <Surveys authToken={authToken} profileInfo={profileInfo} userInfo={userInfo} setUserInfo={setUserInfo}/>
             </div>
         </Route> 
         <Route exact path="/profile">
