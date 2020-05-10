@@ -300,6 +300,7 @@ process.on("SIGINT", function () {
 
 
 /* ------------------------ Researcher Form Endpoints ----------------------- */
+// Researcher can create a new form
 app.post('/createForm', (req, res) => {
   let formId
   DB.createForm(req.body)
@@ -313,6 +314,7 @@ app.post('/createForm', (req, res) => {
     });
 })
 
+// Researcher can see see the form they are working on while adding to it
 app.get("/addToForm", (req, res) => {
   DB.getForm(req.query.formId)
     .then((response) => {
@@ -324,6 +326,7 @@ app.get("/addToForm", (req, res) => {
     });
 })
 
+// Researcher can add a new question to their form
 app.post("/addToForm", (req, res) => {
   DB.addQuestionToForm(req.body, req.query.id)
     .then((response) => {
@@ -335,6 +338,7 @@ app.post("/addToForm", (req, res) => {
     });
 })
 
+// Researcher can see what their form will look like in production
 app.get("/previewForm", (req, res) => {
   DB.getListOfQuestions(req.query.formId)
     .then((response) => {
@@ -346,7 +350,9 @@ app.get("/previewForm", (req, res) => {
     });
 })
 
-// There should be some validation here !
+
+// User can submit a reponse to the researcher's form
+// There should be some validation here!
 app.post("/userSubmit", async (req, res) => {
   let breakNow = false
 
@@ -378,6 +384,8 @@ app.post("/userSubmit", async (req, res) => {
     });
 })
 
+
+// Researcher can see the responses to the forms they created
 app.get("/responses", (req, res) => {
   DB.getResponses(req.query.formId)
     .then((response) => {
@@ -389,6 +397,7 @@ app.get("/responses", (req, res) => {
     });
 })
 
+// User can browse forms created by researchers
 app.get("/browse", (req, res) => {
   DB.getSurveys()
     .then((response) => {
@@ -400,6 +409,7 @@ app.get("/browse", (req, res) => {
     });
 })
 
+// Researchers can view a list of all of the forms they have created
 app.get("/researcherSurveys", (req, res) => {
   DB.getSurveysByUserId(req.query.authorid)
     .then((response) => {

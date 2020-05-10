@@ -107,8 +107,7 @@ exports.get_user_info = (userEmail) => {
 }
 
 
-/* ------------------- CRUD Operations for Researcher Form ------------------ */
-
+/* ------------------- DB Operations for Researcher Form ------------------ */
 
 exports.createForm = (formInfo) => {
     return new Promise((resolve, reject) => {
@@ -141,6 +140,8 @@ exports.addQuestionToForm = (formData) => {
     let query = {
         "_id": ObjectId(formData.formId)
     }
+
+    // This operation allows us to append to an array within a document
     let update = ({
         "$push": {
             questions: { "inputType": formData.inputType, "question": formData.question }
@@ -189,6 +190,7 @@ exports.postQuestionAnswers = (answers, formId) => {
     })
 }
 
+// Used to make sure a user does not submit the same form twice
 exports.seeIfFirstUserEntry = (userID, formId) => {
     let query = {
         "userid": userID
@@ -204,6 +206,7 @@ exports.seeIfFirstUserEntry = (userID, formId) => {
     })
 }
 
+// Get all of the responses for  a form
 exports.getResponses = (formId) => {
     return new Promise((resolve, reject) => {
         DB.collection(formId).find().toArray((err, res) => {
@@ -216,6 +219,7 @@ exports.getResponses = (formId) => {
     })
 }
 
+// Get all surveys posted by researchers
 exports.getSurveys = () => {
     return new Promise((resolve, reject) => {
         DB.collection("researcherForms").find().toArray((err, res) => {
