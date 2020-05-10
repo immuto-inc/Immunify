@@ -393,7 +393,7 @@ body {
   }
 }
 
-@media (max-width: 450px) {
+@media (max-width: 510px) {
   .sidebar {
     width: 0rem !important;
   }
@@ -404,6 +404,13 @@ body {
     width: calc(100% - 0rem);
   }
 }
+
+@media (max-width: 450px) {
+    .hidden-on-tiny {
+    display: none;
+  }
+}
+
 .privacy-notice {
   font-size: 1.25rem;
 }

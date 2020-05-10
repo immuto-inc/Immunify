@@ -296,6 +296,12 @@ const NewSurveysView = ({surveys, handleSurveyClick, userInfo}) => {
   let today = today_as_string()
   let numOutstanding = 0
 
+  const [timeUntilReset, setTimeUntilReset] = useState(time_until_survey_reset())
+
+  setInterval(() => {
+    setTimeUntilReset(time_until_survey_reset())
+  }, 1000);
+
   return (
     <div>
     <h4 className="mt-4">Today's Surveys</h4>
@@ -321,7 +327,7 @@ const NewSurveysView = ({surveys, handleSurveyClick, userInfo}) => {
       </Row>
       {numOutstanding === 0 ? <div> You've completed all the surveys for today. 
       Come back tomorrow to continue to track your well-being! <br/>
-      <span className="text-purple">Surveys reset in {time_until_survey_reset()} at 00:00 UTC</span></div> : ""}
+      <span className="text-purple">Surveys reset in {timeUntilReset} at 00:00 UTC</span></div> : ""}
       <hr/> 
 
     {numOutstanding !== surveys.length ? <div>

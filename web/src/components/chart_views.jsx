@@ -9,21 +9,42 @@ import {
   Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Legend,
 } from 'recharts';
 
-const sampleData = [
+let covidData = [
   {
-      subject: 'Shortness of breath', Personal: 86, Local: 130, National: 150,
+      subject: 'Shortness of breath', Personal: 0.1, Local: 0.4, National: 150,
   },
   {
-    subject: 'Fever', Personal: 98, Local: 130, National: 150,
+    subject: 'Fever', Personal: 0.4, Local: 0.2, National: 150,
   },
   {
-      subject: 'Coughing', Personal: 120, Local: 110, National: 150,
+      subject: 'Coughing', Personal: 0.2, Local: 0.25, National: 150,
   },
   {
-    subject: 'Muscle aches', Personal: 99, Local: 100, National: 150,
+    subject: 'Muscle aches', Personal: 0.4, Local: 0.1, National: 150,
   },
   {
-    subject: 'Loss of taste/smell', Personal: 85, Local: 90, National: 150,
+    subject: 'Sensory Loss', Personal: 0.25, Local: 0.9, National: 150,
+  },
+];
+
+let moodData = [
+  {
+      subject: 'Anxiety', Personal: 86, Local: 130, National: 150,
+  },
+  {
+    subject: 'Gratitude', Personal: 98, Local: 130, National: 150,
+  },
+  {
+      subject: 'Happiness', Personal: 120, Local: 110, National: 150,
+  },
+  {
+    subject: 'Positivity', Personal: 99, Local: 100, National: 150,
+  },
+  {
+    subject: 'Sadness', Personal: 85, Local: 90, National: 150,
+  },
+  {
+    subject: 'Stress', Personal: 85, Local: 90, National: 150,
   },
 ];
 
@@ -32,10 +53,9 @@ const ChartView = ({authToken, userInfo, profileInfo}) => {
   const [selectedView, setSelectedView] = useState("Personal")
 
   return (
-    <div> 
+    <div className="hidden-on-tiny"> 
     <h4> Immunify Data </h4>
-      <div className="mt-3">
-        <Pagination>
+       <Pagination className="mt-4">
           {VIEWS.map((view, vIndex) => {
             return (    
               <Pagination.Item key={view} 
@@ -49,16 +69,32 @@ const ChartView = ({authToken, userInfo, profileInfo}) => {
               </Pagination.Item>
             );
           })}
-
         </Pagination>
-      </div>
-      <RadarChart cx={300} cy={250} outerRadius={150} width={1000} height={500} data={sampleData}>
-        <PolarGrid />
-        <PolarAngleAxis dataKey="subject" />
-        <PolarRadiusAxis />
-        <Radar name={selectedView} dataKey={selectedView} stroke="#105EA8" fill="#21a1da" fillOpacity={0.6} />
-        <Legend/>
-      </RadarChart>
+      <Row className="align-items-center">
+
+        <Col className="d-flex justify-content-center mt-2">
+        <RadarChart cx={275} cy={190} outerRadius={150} width={500} height={400} data={covidData}>
+          <PolarGrid />
+          <PolarAngleAxis dataKey="subject" />
+          <PolarRadiusAxis />
+          <Radar name={`${selectedView} COVID-19 Symptoms`} dataKey={selectedView} stroke="#105EA8" fill="#21a1da" fillOpacity={0.6} />
+          <Legend/>
+        </RadarChart>
+        </Col>
+
+        <Col className="d-flex justify-content-center mt-2">
+        <RadarChart cx={275} cy={190} outerRadius={150} width={500} height={400} data={moodData}>
+          <PolarGrid />
+          <PolarAngleAxis dataKey="subject" />
+          <PolarRadiusAxis />
+          <Radar name={`${selectedView} COVID-19 Symptoms`} dataKey={selectedView} stroke="#3c20a0" fill="#6f42c1" fillOpacity={0.6} />
+          <Legend/>
+        </RadarChart>
+        </Col>
+      </Row>
+
+
+    <hr className="my-5"/>
     </div>
   );
 }

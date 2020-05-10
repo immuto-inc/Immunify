@@ -156,7 +156,7 @@ const covidCheckinSurvey = {
                 "Loss of taste or smell",
                 "Muscle aches",
                 "Shortness of breath",
-
+                "None"
       ],
       type: "checkbox"
     },
@@ -180,15 +180,14 @@ const moodCheckinSurvey = {
   questions: [
     {
       questionText: "Select any options which describe today's mood",
-      answers: ["anxiety", 
-                "fear",
-                "gratitude",
-                "happiness", 
-                "loneliness",
-                "positivity", 
-                "sadness", 
-                "stress", 
-                "other",
+      answers: ["Anxiety", 
+                "Gratitude",
+                "Happiness", 
+                "Loneliness",
+                "Positivity", 
+                "Sadness", 
+                "Stress", 
+                "None or Other",
       ],
       type: "checkbox"
     }
