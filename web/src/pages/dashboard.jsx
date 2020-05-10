@@ -69,7 +69,9 @@ function store_demographics_for_user(recordID) {
   })  
 }
 
-const Dashboard = ({authToken, aggregateResults, profileInfo, userInfo, outstandingSurveys, surveyResults}) => {
+const Dashboard = (
+  {authToken, aggregateResults, profileInfo, userInfo, 
+    outstandingSurveys, surveyResults}) => {
   let history = useHistory()  
   outstandingSurveys = outstandingSurveys || []
   authToken = authToken || window.localStorage.authToken
@@ -139,8 +141,8 @@ const Dashboard = ({authToken, aggregateResults, profileInfo, userInfo, outstand
       <NewSurveysView surveys={outstandingSurveys} 
                       userInfo={userInfo}
                       handleSurveyClick={surveyID => history.push(`/surveys/${surveyID}`)}/>
-      <ZIPMap/>
-    </Container>
+{/*      <ZIPMap/>
+*/}    </Container>
   );
 }
 

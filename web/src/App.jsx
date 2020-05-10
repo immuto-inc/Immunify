@@ -108,27 +108,28 @@ function App() {
 
   useEffect(() => { 
     if (!userInfo) return;
+    if (surveyResults["MOOD"].length !== 0 || surveyResults["COVID"].length !== 0) return
 
     if (userInfo["COVID_transactions"] && userInfo["COVID_transactions"].length) {
-        userInfo["COVID_transactions"].map(recordID => {
-            return load_survey_response(recordID)
+        for (let recordID of userInfo["COVID_transactions"]) {
+            load_survey_response(recordID)
             .then(covidResults => {
                 surveyResults["COVID"].push(covidResults)
-                setSurveyResults(surveyResults)
+                setSurveyResults(JSON.parse(JSON.stringify(surveyResults)))
             })
             .catch(err => console.error(err))
-        })
+        }
     }
 
     if (userInfo["MOOD_transactions"] && userInfo["MOOD_transactions"].length) {
-        userInfo["MOOD_transactions"].map(recordID => {
-            return load_survey_response(recordID)
+        for (let recordID of userInfo["MOOD_transactions"]) {
+            load_survey_response(recordID)
             .then(covidResults => {
                 surveyResults["MOOD"].push(covidResults)
-                setSurveyResults(surveyResults)
+                setSurveyResults(JSON.parse(JSON.stringify(surveyResults)))
             })
             .catch(err => console.error(err))
-        })
+        }
     }
   }, [userInfo, surveyResults]);
 

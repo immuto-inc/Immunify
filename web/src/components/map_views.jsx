@@ -15,7 +15,7 @@ const ZIPMap = () => {
         <Row className="align-items-center my-3">
           <Col className="d-flex justify-content-center">
           <Map
-            style="mapbox://styles/mapbox/streets-v9"
+            style="mapbox://styles/mapbox/dark-v10"
             containerStyle={{
               height: '85vh',
               width: '75vw'

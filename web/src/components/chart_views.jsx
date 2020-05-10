@@ -50,7 +50,10 @@ const DEFAULT_MOOD_DATA = [
 const NOISE_BUFF = 0.05
 
 function load_personal_results(surveyResults, covidData, setCovidData, moodData, setMoodData) {
+  if (surveyResults["COVID"].length === 0 && surveyResults["MOOD"].length === 0) return;
+
   console.log("loading personal results")
+  console.log(surveyResults)
   let covidResults = surveyResults["COVID"]
   let covidTotals = { 
     'Shortness of breath': 0, 
@@ -218,16 +221,16 @@ const ChartView = ({profileInfo, surveyResults, aggregateResults}) => {
   const [moodData, setMoodData] = useState(DEFAULT_MOOD_DATA)
 
   useEffect(() => { 
-    if (surveyResults["COVID"].length === 0 && surveyResults["MOOD"].length === 0) return;
-
-    load_personal_results(surveyResults, covidData, setCovidData, moodData, setMoodData)
-  }, [surveyResults, covidData, moodData]);
-
-  useEffect(() => { 
     if (!profileInfo) return;
      
     load_local_national_results(profileInfo[2] /* user ZIP */, aggregateResults, covidData, setCovidData, moodData, setMoodData)
   }, [aggregateResults, covidData, moodData, profileInfo]);
+
+  useEffect(() => { 
+    load_personal_results(surveyResults, covidData, setCovidData, moodData, setMoodData)
+  }, [surveyResults, covidData, moodData]);
+
+
 
   if (!profileInfo) {
     return <div>
