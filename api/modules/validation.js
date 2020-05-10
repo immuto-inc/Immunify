@@ -129,22 +129,19 @@ exports.VALIDATE_JSON_10000 = exports.build_validator(
     })
 exports.VALIDATE_ZIP_OR_NA = exports.build_validator(
     (userZIP) => {
-        if (typeof userZIP === "string" && userZIP.toLowerCase() === "na") return "NA"
+        if (userZIP.toLowerCase() === "na") return "NA"
 
-        try {
-            parsed = parseInt(userZIP, 10)
-            if (parsed <= 9999) throw new Error("Invalid ZIP code format")
-            if (parsed > 99999) throw new Error("Invalid ZIP code format")
+        let parsedZIP = userZIP.substring(0,5).replace(/[^0-9]/g, "")
 
-            return parsed
-        } catch(err) {
-            throw new Error("Invalid ZIP code format")
+        if (parsedZIP !== userZIP) {
+            throw new Error("Invalid ZIP code")
         }
+
+        return parsedZIP
     }, 
     {
         maxLength: 5,
-        isOptional: false,
-        isNumber: true
+        isOptional: false
     })
 
 

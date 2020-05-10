@@ -233,6 +233,19 @@ exports.add_response_for_survey = (surveyID, response) => {
 }
 
 
+exports.get_survey_responses = (surveyID) => {
+    return new Promise((resolve, reject) => {
+        const query = {surveyID}
+        DB.collection("survey_responses").findOne(query, (err, surveyRes) => {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(surveyRes.responses)
+            }
+        })
+    })
+}
+
 
 
 

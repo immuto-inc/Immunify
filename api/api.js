@@ -147,6 +147,10 @@ app.get('/user-info', requireAuth, (req, res) => {
   })
 })
 
+app.get('/am-i-authenticated', requireAuth, (req, res) => {
+  res.status(204).end()
+})
+
 ROUTE_VALIDATION['/survey-info'] = { // may be worth adding individually before each route
   'surveyID': valid.VALIDATE_SURVEY_ID,
 }
@@ -229,6 +233,20 @@ app.post('/record-survey-response', requireAuth, validateInput, async (req, res)
     res.status(500).end()
   }
 })
+
+ROUTE_VALIDATION['/survey-responses'] = { // may be worth adding individually before each route
+  'surveyID': valid.VALIDATE_SURVEY_ID,
+}
+app.get('/survey-responses', requireAuth, validateInput, (req, res) => {
+  DB.get_survey_responses(req.validated.surveyID)
+  .then(surveyResponses => res.json(surveyResponses))
+  .catch(err => {
+    console.error(err)
+    res.status(500).end()
+  })
+})
+
+
 
 // Registration and auth
 

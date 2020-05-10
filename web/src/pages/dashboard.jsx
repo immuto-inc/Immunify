@@ -39,9 +39,7 @@ const oboardingQuestions = [
             if (input.toLowerCase().startsWith(e)) return input.substring(0, e.length);
           }
 
-          let parsed = parseInt(input.substring(0,5), 10)
-          if (parsed) return parsed
-          return ""
+          return input.substring(0,5).replace(/[^0-9]/g, "")
         } catch(err) {
           return ""
         }
