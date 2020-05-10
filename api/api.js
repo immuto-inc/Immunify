@@ -115,8 +115,19 @@ function requireAuth(req, res, next) {
 }
 
 app.use(cors({
-  origin: ["http://localhost:3000", "http://localhost:8002", "https://immunify.herokuapp.com", "https://immunify.us"]
+  origin: ["http://localhost:3000", "http://localhost:8002", "http://immunify.herokuapp.com", "https://immunify.herokuapp.com", "https://immunify.us"]
 }))
+
+function requireHTTPS(req, res, next) {
+  // The 'x-forwarded-proto' check is for Heroku
+  if (!req.secure && req.get('x-forwarded-proto') !== 'https' && !process.env.TEST) {
+    return res.redirect('https://' + req.get('host') + req.url);
+  }
+  next();
+}
+if (process.env.MODE === "PROD") {
+  app.use(requireHTTPS);
+}
 
 function today_as_string() {
   let today = new Date();
