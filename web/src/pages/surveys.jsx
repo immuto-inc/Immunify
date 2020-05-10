@@ -40,13 +40,14 @@ const Surveys = ({authToken, userInfo, setUserInfo, profileInfo, outstandingSurv
 
   useEffect(() => { 
     if (!surveyID) return;
+    if (userInfo && userInfo[surveyID] === today_as_string()) return;
 
     get_survey_info(authToken, surveyID) 
     .then(surveyInfo => { 
       setSurvey(surveyInfo)
     })
     .catch(err => console.error(err))
-  }, [surveyID]);
+  }, [userInfo, surveyID]);
 
   authToken = authToken || window.localStorage.authToken
   if (!authToken) {history.push('/login');}
@@ -65,13 +66,22 @@ const Surveys = ({authToken, userInfo, setUserInfo, profileInfo, outstandingSurv
     history.push('/dashboard') // to fill out onboarding form
   }
 
-  if (!survey && !surveyID) {
+  if (!survey && !surveyID) { // default /surveys page with no params
     return (
       <Container fluid> 
         <PageTitle pageName="Surveys" score={userInfo.score}/> 
         <NewSurveysView surveys={outstandingSurveys} userInfo={userInfo}
                         handleSurveyClick={surveyID => history.push(`/surveys/${surveyID}`)}/>
 
+      </Container>
+    );
+  }
+
+  if (userInfo && userInfo[surveyID] === today_as_string()) {
+    return (
+      <Container fluid> 
+        <PageTitle pageName="Surveys" score={userInfo.score}/> 
+        <span>You've already completed this survey for today!</span>
       </Container>
     );
   }
@@ -94,7 +104,7 @@ const Surveys = ({authToken, userInfo, setUserInfo, profileInfo, outstandingSurv
                     timeEstimate={survey.timeEstimate}
                     pointValue={survey.pointValue}
                     type={survey.type}
-                    privacyNotice=' '
+                    privacyNotice='By submitting this survey, you consent to share your fully-anonymized responses in aggregate with researchers, healthcare providers, and other members of Immunify.'
                     handleSubmit={responses => {
                       let identifier = survey.identifier || survey._id
                       responses.push(today_as_string()) // include date with survey response
