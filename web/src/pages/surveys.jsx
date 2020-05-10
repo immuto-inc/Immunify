@@ -32,7 +32,8 @@ function store_survey_results_for_user(recordID, surveyID, surveyResponse, userZ
   })  
 }
 
-const Surveys = ({authToken, userInfo, setUserInfo, profileInfo, outstandingSurveys}) => {
+const Surveys = 
+({authToken, userInfo, setUserInfo, profileInfo, outstandingSurveys, surveyResults}) => {
   let history = useHistory()  
   const { surveyID } = useParams()
 
@@ -81,7 +82,8 @@ const Surveys = ({authToken, userInfo, setUserInfo, profileInfo, outstandingSurv
     return (
       <Container fluid> 
         <PageTitle pageName="Surveys" score={userInfo.score}/> 
-        <span>You've already completed this survey for today!</span>
+        <span>You've already completed this survey for today! Here are your
+        existing responses: <br/> {JSON.stringify(surveyResults[surveyID])}</span>
       </Container>
     );
   }

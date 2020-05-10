@@ -71,7 +71,7 @@ function store_demographics_for_user(recordID) {
   })  
 }
 
-const Dashboard = ({authToken, userInfo, outstandingSurveys}) => {
+const Dashboard = ({authToken, userInfo, outstandingSurveys, surveyResults}) => {
   let history = useHistory()  
   outstandingSurveys = outstandingSurveys || []
   authToken = authToken || window.localStorage.authToken

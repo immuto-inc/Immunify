@@ -26,6 +26,17 @@ import { get_user_info, IMMUTO_URL } from "./utils"
 import immuto from "./immuto"
 export const im = immuto.init(true, IMMUTO_URL);
 
+function load_survey_response(recordID) {
+    return new Promise((resolve, reject) => {
+        let userPassword = window.localStorage.password
+        im.download_file_for_recordID(recordID, userPassword, true)
+        .then(fileInfo => {
+            resolve(JSON.parse(fileInfo.data))
+        })
+        .catch(err => reject(err))
+    })
+}
+
 function App() {
   const [authToken, setAuthToken] = useState(window.localStorage.authToken)
   const [userInfo, setUserInfo] = useState(undefined)
@@ -46,6 +57,10 @@ function App() {
       identifier: "MOOD"
     }
   ])
+  const [surveyResults, setSurveyResults] = useState({
+    "COVID": [],
+    "MOOD": []
+  })
 
   useEffect(() => { 
     if (!authToken || userInfo) return;
@@ -67,6 +82,32 @@ function App() {
     .catch(err => console.error(err))
   }, [authToken, userInfo]);
 
+  useEffect(() => { 
+    if (!userInfo) return;
+
+    if (userInfo["COVID_transactions"].length) {
+        userInfo["COVID_transactions"].map(recordID => {
+            load_survey_response(recordID)
+            .then(covidResults => {
+                surveyResults["COVID"].push(covidResults)
+                setSurveyResults(surveyResults)
+            })
+            .catch(err => console.error(err))
+        })
+    }
+
+    if (userInfo["MOOD_transactions"].length) {
+        userInfo["MOOD_transactions"].map(recordID => {
+            load_survey_response(recordID)
+            .then(covidResults => {
+                surveyResults["MOOD"].push(covidResults)
+                setSurveyResults(surveyResults)
+            })
+            .catch(err => console.error(err))
+        })
+    }
+  }, [userInfo]);
+
   return (
     <Router>
       <Switch>
@@ -86,19 +127,19 @@ function App() {
         <Route exact path="/dashboard">
             <div>     
             <Sidebar activeLink='/dashboard'/> 
-            <Dashboard authToken={authToken} profileInfo={profileInfo} outstandingSurveys={outstandingSurveys} userInfo={userInfo}/>
+            <Dashboard authToken={authToken} profileInfo={profileInfo} outstandingSurveys={outstandingSurveys} userInfo={userInfo} surveyResults={surveyResults}/>
             </div>
         </Route> 
         <Route exact path="/surveys">
             <div>     
             <Sidebar activeLink='/surveys'/> 
-            <Surveys authToken={authToken} profileInfo={profileInfo} outstandingSurveys={outstandingSurveys} userInfo={userInfo} setUserInfo={setUserInfo}/>
+            <Surveys authToken={authToken} profileInfo={profileInfo} outstandingSurveys={outstandingSurveys} userInfo={userInfo} setUserInfo={setUserInfo} surveyResults={surveyResults}/>
             </div>
         </Route> 
         <Route exact path="/surveys/:surveyID">
             <div>     
             <Sidebar activeLink='/surveys'/> 
-            <Surveys authToken={authToken} profileInfo={profileInfo} userInfo={userInfo} setUserInfo={setUserInfo}/>
+            <Surveys authToken={authToken} profileInfo={profileInfo} userInfo={userInfo} setUserInfo={setUserInfo} surveyResults={surveyResults}/>
             </div>
         </Route> 
         <Route exact path="/profile">
