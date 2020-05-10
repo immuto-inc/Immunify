@@ -22,7 +22,7 @@ import Sidebar from "./components/sidebar"
 import './theme.scss'; // includes bootstrap
 import './styles/dashboard.css' // for sidebar formatting mostly
 
-import { get_user_info, IMMUTO_URL } from "./utils"
+import { get_user_info, IMMUTO_URL, API_URL } from "./utils"
 import immuto from "./immuto"
 export const im = immuto.init(true, IMMUTO_URL);
 
@@ -35,6 +35,25 @@ function load_survey_response(recordID) {
         })
         .catch(err => reject(err))
     })
+}
+
+function load_aggregate_responses(surveyID, authToken) {
+  authToken = authToken || window.localStorage.authToken
+
+  return new Promise((resolve, reject) => {
+    let url = `${API_URL}/survey-responses?authToken=${authToken}`;
+    url += "&surveyID=" + surveyID
+
+    fetch(url, {})
+    .then(res => res.json())
+    .then(
+      (result) => {
+        resolve(result)
+      },
+      (err) => {
+        reject(err)
+      })
+  })
 }
 
 function App() {
@@ -58,6 +77,10 @@ function App() {
     }
   ])
   const [surveyResults, setSurveyResults] = useState({
+    "COVID": [],
+    "MOOD": []
+  })
+  const [aggregateResults, setAggregateResults] = useState({
     "COVID": [],
     "MOOD": []
   })
@@ -108,6 +131,23 @@ function App() {
     }
   }, [userInfo]);
 
+  useEffect(() => { 
+    if (!authToken) return;
+
+    load_aggregate_responses("MOOD", authToken) 
+    .then(responses => { 
+        aggregateResults["MOOD"] = responses
+        setAggregateResults(aggregateResults)
+    })
+    .catch(err => console.error(err))
+    load_aggregate_responses("COVID", authToken) 
+    .then(responses => { 
+        aggregateResults["COVID"] = responses
+        setAggregateResults(aggregateResults)
+    })
+    .catch(err => console.error(err))
+  }, []);
+
   return (
     <Router>
       <Switch>
@@ -127,7 +167,7 @@ function App() {
         <Route exact path="/dashboard">
             <div>     
             <Sidebar activeLink='/dashboard'/> 
-            <Dashboard authToken={authToken} profileInfo={profileInfo} outstandingSurveys={outstandingSurveys} userInfo={userInfo} surveyResults={surveyResults}/>
+            <Dashboard authToken={authToken} aggregateResults={aggregateResults} profileInfo={profileInfo} outstandingSurveys={outstandingSurveys} userInfo={userInfo} surveyResults={surveyResults}/>
             </div>
         </Route> 
         <Route exact path="/surveys">

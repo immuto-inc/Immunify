@@ -159,16 +159,7 @@ const covidCheckinSurvey = {
                 "None"
       ],
       type: "checkbox"
-    },
-    {
-      questionText: "Select any countries you've visited within the past month",
-      answers: ["USA", 
-                "Brazil", 
-                "Italy", 
-                "China"
-      ],
-      type: "checkbox"
-    },
+    }
   ],
   identifier: "COVID"
 }
