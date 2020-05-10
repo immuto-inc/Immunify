@@ -194,6 +194,8 @@ app.post("/logout", (req, res) => {
     });
 });
 
+
+
 /********************************* APP START **********************************/
 let cred = get_credentials();
 
@@ -344,8 +346,70 @@ app.get("/previewForm", (req, res) => {
     });
 })
 
+// There should be some validation here !
+app.post("/userSubmit", async (req, res) => {
+  let breakNow = false
 
+  // Checks if user already submitted to this form
+  await DB.seeIfFirstUserEntry(req.body.userid, req.query.formId)
+    .then((response) => {
+      if (response != null) {
+        breakNow = true
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).end();
+    });
 
+  if (breakNow) {
+    res.send("Already Submitted")
+    return
+  }
+
+  // If not, the answers get posted to the form's collection
+  DB.postQuestionAnswers(req.body, req.query.formId)
+    .then((response) => {
+      res.send(response)
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).end();
+    });
+})
+
+app.get("/responses", (req, res) => {
+  DB.getResponses(req.query.formId)
+    .then((response) => {
+      res.send(response)
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).end();
+    });
+})
+
+app.get("/browse", (req, res) => {
+  DB.getSurveys()
+    .then((response) => {
+      res.send(response)
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).end();
+    });
+})
+
+app.get("/researcherSurveys", (req, res) => {
+  DB.getSurveysByUserId(req.query.authorid)
+    .then((response) => {
+      res.send(response)
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).end();
+    });
+})
 
 /***************************** Utility Functions ******************************/
 function user_logged_in_immuto(authToken) {

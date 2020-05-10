@@ -5,8 +5,8 @@ import { Redirect } from 'react-router-dom'
 export default class ResearcherFormNew extends Component {
     state = {
         title: '',
-        author: '',
         institution: '',
+        estimatedTime: '',
         redirect: null,
     }
 
@@ -15,8 +15,9 @@ export default class ResearcherFormNew extends Component {
 
         let data = {
             title: this.state.title,
-            author: this.state.author,
+            authorid: "peter_placeholder_id",
             institution: this.state.institution,
+            estimatedTime: this.state.estimatedTime,
             questions: [],
         }
 
@@ -31,7 +32,7 @@ export default class ResearcherFormNew extends Component {
                 console.error(err)
             })
 
-        this.setState({ redirect: `/addToForm/${formId}` })
+        this.setState({ redirect: `/researcherform/add/${formId}` })
     }
 
     render() {
@@ -52,19 +53,19 @@ export default class ResearcherFormNew extends Component {
                     />
                     <input
                         type="text"
-                        name="author"
-                        id="author"
-                        placeholder="author"
-                        value={this.state.author}
-                        onChange={(event) => this.setState({ author: event.target.value })}
-                    />
-                    <input
-                        type="text"
                         name="institution"
                         id="institution"
                         placeholder="institution"
                         value={this.state.institution}
                         onChange={(event) => this.setState({ institution: event.target.value })}
+                    />
+                    <input
+                        type="number"
+                        name="et"
+                        id="et"
+                        placeholder="estimated time in minutes"
+                        value={this.state.estimatedTime}
+                        onChange={(event) => this.setState({ estimatedTime: event.target.value })}
                     />
 
                     <button onClick={this.createForm}>Create Form</button>

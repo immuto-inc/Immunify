@@ -1,10 +1,12 @@
 import axios from 'axios'
 import React, { Component } from 'react'
+import MultipleChoice from './MultipleChoice'
 
 export default class AddToForm extends Component {
     state = {
         inputType: "text",
         question: "",
+        showMultipleChoice: false,
     }
 
     renderSampleInput = () => {
@@ -27,29 +29,34 @@ export default class AddToForm extends Component {
     renderInputTypeButton = () => {
         return (
             <React.Fragment>
-                <button onClick={() => this.setInputType("text")} >Text</button>
-                <button onClick={() => this.setInputType("number")}>Number</button>
+                <button onClick={this.showText} >Text</button>
+                <button onClick={this.showNumber}>Number</button>
+                <button onClick={this.showMultipleChoice}>Multiple Choice</button>
             </React.Fragment>
         )
     }
 
-    setInputType = (t) => {
-        this.setState({
-            inputType: t
-        })
+    showText = () => {
+        this.setState({ inputType: "text" })
+        this.setState({ showMultipleChoice: false })
+    }
+
+    showNumber = () => {
+        this.setState({ inputType: "number" })
+        this.setState({ showMultipleChoice: false })
+    }
+
+    showMultipleChoice = () => {
+        this.setState({ showMultipleChoice: true })
     }
 
     addToForm = async () => {
-        console.log(this.props.formId)
         const data = {
             formId: this.props.formId,
             inputType: this.state.inputType,
             question: this.state.question,
         }
         await axios.post(`http://localhost:8001/addToForm`, data)
-            .then((res) => {
-                console.log(res)
-            })
             .catch((err) => {
                 console.error(err)
             })
@@ -58,26 +65,37 @@ export default class AddToForm extends Component {
     }
 
     render() {
-        return (
-            <div>
-                {this.renderInputTypeButton()}
-                <br />
+        if (this.state.showMultipleChoice) {
+            return (
+                <div>
+                    {this.renderInputTypeButton()}
+                    <br />
+                    <MultipleChoice formId={this.props.formId} fetchQuestionList={this.props.fetchQuestionList} />
+                </div>
+            )
+        } else {
+            return (
+                <div>
+                    {this.renderInputTypeButton()}
+                    <br />
 
-                <label htmlFor="question" >Question: </label>
-                <input
-                    value={this.state.question}
-                    onChange={(event) => this.setState({ question: event.target.value })}
-                    type="text"
-                    name="question"
-                    id="question"
-                    placeholder="Please fill out this field"
-                />
+                    <label htmlFor="question" >Question: </label>
+                    <input
+                        value={this.state.question}
+                        onChange={(event) => this.setState({ question: event.target.value })}
+                        type="text"
+                        name="question"
+                        id="question"
+                        placeholder="Please fill out this field"
+                    />
 
-                {this.renderSampleInput()}
+                    {this.renderSampleInput()}
 
-                <br /><br />
-                <button onClick={this.addToForm} >Add to Form</button>
-            </div>
-        )
+                    <br /><br />
+                    <button onClick={this.addToForm} >Add to Form</button>
+                </div>
+            )
+        }
+
     }
 }

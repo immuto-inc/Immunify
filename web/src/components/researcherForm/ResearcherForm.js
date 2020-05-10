@@ -27,17 +27,13 @@ export default class ResearcherForm extends Component {
     fetchQuestionList = async () => {
         await axios.get(`http://localhost:8001/previewForm?formId=${formId}`)
             .then((res) => {
-                console.log("res data ", res)
                 this.setState({ questionList: res.data.questions })
             })
             .catch((err) => {
                 console.error(err)
             })
 
-        console.log(this.state.questionList)
     }
-
-
 
     render() {
         return (

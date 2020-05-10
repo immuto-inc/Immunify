@@ -6,8 +6,13 @@ import Dashboard from "./components/dashboard";
 import Homepage from "./components/homepage";
 import Login from "./components/login";
 import Register from "./components/register";
+import BroseForms from './components/researcherForm/BrowseForms';
 import CreateForm from './components/researcherForm/CreateForm';
+import MultipleChoice from './components/researcherForm/MultipleChoice';
 import ResearcherForm from './components/researcherForm/ResearcherForm';
+import ResearcherPortal from './components/researcherForm/ResearcherPortal';
+import Responses from './components/researcherForm/Responses';
+import UserForm from './components/researcherForm/UserForm';
 
 
 
@@ -38,12 +43,28 @@ function App() {
           <Route exact path="/dashboard">
             {() => <Dashboard authToken={authToken} />}
           </Route>
-          <Route exact path="/newForm">
+          <Route exact path="/researcherform/new">
             {() => <CreateForm authToken={authToken} />}
           </Route>
-          <Route exact path="/addToForm/:formId">
+          <Route exact path="/researcherform/add/:formId">
             {(props) => <ResearcherForm {...props} authToken={authToken} />}
           </Route>
+          <Route exact path="/researcherform/responses/:formId">
+            {(props) => <Responses {...props} authToken={authToken} />}
+          </Route>
+          <Route exact path="/researcherform/userview/:formId">
+            {(props) => <UserForm {...props} authToken={authToken} />}
+          </Route>
+          <Route exact path="/browse">
+            {() => <BroseForms authToken={authToken} />}
+          </Route>
+          <Route exact path="/researcher/portal">
+            {() => <ResearcherPortal authToken={authToken} />}
+          </Route>
+          <Route exact path="/researcherform/add/multiplechoice">
+            {(props) => <MultipleChoice {...props} authToken={authToken} />}
+          </Route>
+
         </Switch>
       </Router>
     </ThemeProvider>

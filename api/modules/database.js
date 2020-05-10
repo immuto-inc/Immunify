@@ -111,7 +111,6 @@ exports.get_user_info = (userEmail) => {
 
 
 exports.createForm = (formInfo) => {
-    console.log(formInfo)
     return new Promise((resolve, reject) => {
         DB.collection("researcherForms").insertOne(formInfo, (err, result) => {
             if (err) {
@@ -139,20 +138,14 @@ exports.getForm = (formId) => {
 }
 
 exports.addQuestionToForm = (formData) => {
-
-    console.log(formData)
-
     let query = {
         "_id": ObjectId(formData.formId)
     }
-
-
     let update = ({
         "$push": {
             questions: { "inputType": formData.inputType, "question": formData.question }
         }
     });
-
     return new Promise((resolve, reject) => {
         DB.collection("researcherForms").updateOne(query, update, (err, res) => {
             if (err) {
@@ -177,6 +170,73 @@ exports.getListOfQuestions = (formId) => {
                 reject(err)
             } else {
 
+                resolve(res)
+            }
+        })
+    })
+}
+
+
+exports.postQuestionAnswers = (answers, formId) => {
+    return new Promise((resolve, reject) => {
+        DB.collection(formId).insertOne(answers, (err, result) => {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(result)
+            }
+        })
+    })
+}
+
+exports.seeIfFirstUserEntry = (userID, formId) => {
+    let query = {
+        "userid": userID
+    }
+    return new Promise((resolve, reject) => {
+        DB.collection(formId).findOne(query, (err, res) => {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(res)
+            }
+        })
+    })
+}
+
+exports.getResponses = (formId) => {
+    return new Promise((resolve, reject) => {
+        DB.collection(formId).find().toArray((err, res) => {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(res)
+            }
+        })
+    })
+}
+
+exports.getSurveys = () => {
+    return new Promise((resolve, reject) => {
+        DB.collection("researcherForms").find().toArray((err, res) => {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(res)
+            }
+        })
+    })
+}
+
+exports.getSurveysByUserId = (authorid) => {
+    let query = {
+        "authorid": authorid
+    }
+    return new Promise((resolve, reject) => {
+        DB.collection("researcherForms").find(query).toArray((err, res) => {
+            if (err) {
+                reject(err)
+            } else {
                 resolve(res)
             }
         })
