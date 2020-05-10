@@ -20,7 +20,7 @@ import {
 
 import { SurveyCard } from "./card_views"
 
-import { today_as_string } from "../utils"
+import { today_as_string, time_until_survey_reset } from "../utils"
 
 const CheckboxQuestion = 
 ({type, questionText, answers, textInputProps, questionNumber, totalQuestions,
@@ -319,6 +319,9 @@ const NewSurveysView = ({surveys, handleSurveyClick, userInfo}) => {
             );
           })}
       </Row>
+      {numOutstanding === 0 ? <div> You've completed all the surveys for today. 
+      Come back tomorrow to continue to track your well-being! <br/>
+      <span className="text-purple">Surveys reset in {time_until_survey_reset()} at 00:00 UTC</span></div> : ""}
       <hr/> 
 
     {numOutstanding !== surveys.length ? <div>

@@ -16,7 +16,7 @@ if (window.location.href.includes("herokuapp.com")) {
 
 export const IMMUTO_URL = iURL
 
-export function get_user_info(authToken : string) {
+export function get_user_info(authToken) {
   authToken = authToken || window.localStorage.authToken
   return new Promise((resolve, reject) => {
     let url = `${API_URL}/user-info?authToken=${authToken}`;
@@ -32,7 +32,7 @@ export function get_user_info(authToken : string) {
   })
 }
 
-export function get_survey_info(authToken : string, surveyID : string) {
+export function get_survey_info(authToken, surveyID) {
   return new Promise((resolve, reject) => {
     authToken = authToken || window.localStorage.authToken
     let url = `${API_URL}/survey-info?authToken=${authToken}`;
@@ -55,4 +55,18 @@ export function today_as_string() {
   let mm = String(today.getUTCMonth() + 1).padStart(2, '0'); //January is 0!
   let yyyy = today.getUTCFullYear();
   return `${dd}-${mm}-${yyyy}`
+}
+
+// adapted from https://javascript.info/task/get-seconds-to-tomorrow
+export function time_until_survey_reset() {
+  let now = new Date();
+  let nowUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
+                        now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds());
+  let tomorrow = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()+1);
+
+  let diff = tomorrow - nowUTC; // difference in ms
+
+  let hours = Math.floor(diff / 3600000)
+  let minutes = Math.ceil((diff - hours * 3600000) / 60000)
+  return `${hours} hours ${minutes} minutes`
 }
