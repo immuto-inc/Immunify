@@ -95,7 +95,7 @@ exports.add_new_user = (userInfo) => {
 
 exports.get_user_info = (userEmail) => {
     return new Promise((resolve, reject) => {
-        let query = {email: userEmail}
+        let query = {email: userEmail.toLowerCase()}
         DB.collection("users").findOne(query, (err, userInfo) => {
             if (err) {
                 reject(err)
