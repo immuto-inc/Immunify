@@ -83,7 +83,37 @@ const Surveys =
       <Container fluid> 
         <PageTitle pageName="Surveys" score={userInfo.score}/> 
         <span>You've already completed this survey for today! Here are your
-        existing responses: <br/> {JSON.stringify(surveyResults[surveyID])}</span>
+        existing responses: <br/> 
+
+        <div class="list-group my-3">
+        <ul className="ml-0 pl-0">
+          <li class="list-group-item active">
+            {surveyID === "MOOD" ? <h6 className="my-0 py-0">Select any options which describe today's mood:</h6> 
+                        : ""}
+            {surveyID === "COVID" ? <h6 className="my-0 py-0">Select any symptoms you've experienced within the last 24h:</h6> 
+                        : ""} 
+          </li>
+          {surveyResults[surveyID].map((responses, rIndex) => {
+            let answers = responses[0] // for first question only for built-ins
+            return (
+              <li key={rIndex} class="list-group-item">
+              <span className="text-purple">
+              Response Date: {responses[responses.length - 1]} <span className="ml-1"> [DD-MM-YYYY]</span>
+              </span><br/>
+              <span className="h6"> 
+              Responses: {answers.join(", ")}
+              </span>
+              </li>
+            );
+          })}
+          
+        </ul>
+        </div>
+
+                      
+{/*          JSON.stringify(surveyResults[surveyID])}
+*/}
+        </span>
       </Container>
     );
   }

@@ -15,6 +15,7 @@ const ZIPMap = () => {
         <Row className="align-items-center my-3">
           <Col className="d-flex justify-content-center">
           <Map
+           // eslint-disable-next-line
             style="mapbox://styles/mapbox/dark-v10"
             containerStyle={{
               height: '85vh',
