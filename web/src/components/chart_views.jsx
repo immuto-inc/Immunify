@@ -48,6 +48,8 @@ const DEFAULT_MOOD_DATA = [
   },
 ];
 
+const NOISE_BUFF = 0.05
+
 function load_personal_results(surveyResults, covidData, setCovidData, moodData, setMoodData) {
   console.log("loading personal results")
   let covidResults = surveyResults["COVID"]
@@ -61,53 +63,46 @@ function load_personal_results(surveyResults, covidData, setCovidData, moodData,
   let moodResults = surveyResults["MOOD"]
   let moodTotals = { Anxiety: 0, Gratitude: 0, Happiness: 0, Positivity: 0, Sadness: 0, Stress: 0 }
 
-  if (covidResults.length) {
-    covidResults.map(question => {
-      question.map(answers => {
-        if (typeof answers === "object") {
-          answers.map(answer => {
-          if (answer === "Loss of taste or smell") { answer = "Sensory loss" }
-          if (answer in covidTotals) {
-            covidTotals[answer] += 1
-          }
-        })}
-      })
-    })
-    // normalize by total responses
-    for (let field in covidTotals) {
-      for (let component of covidData) {
-        if (component.subject === field) {
-          component.Personal = covidTotals[field] / covidResults.length
+  covidResults.map(question => {
+    question.map(answers => {
+      if (typeof answers === "object") {
+        answers.map(answer => {
+        if (answer === "Loss of taste or smell") { answer = "Sensory loss" }
+        if (answer in covidTotals) {
+          covidTotals[answer] += 1
         }
+      })}
+    })
+  })
+  // normalize by total responses
+  for (let field in covidTotals) {
+    for (let component of covidData) {
+      if (component.subject === field) {
+        component.Personal = covidResults.length ? covidTotals[field] / covidResults.length : 0
       }
     }
-    setCovidData(covidData)
-    console.log(covidData)
   }
+  setCovidData(covidData)
 
-  if (moodResults.length) {
-    moodResults.map(question => {
-      question.map(answers => {
-        if (typeof answers === "object") {
-          answers.map(answer => {
-          if (answer in moodTotals) {
-            moodTotals[answer] += 1
-          }
-        })}
-      })
-    })
-    // normalize by total responses
-    for (let field in moodTotals) {
-      for (let component of moodData) {
-        if (component.subject === field) {
-          component.Personal = moodTotals[field] / moodResults.length
+  moodResults.map(question => {
+    question.map(answers => {
+      if (typeof answers === "object") {
+        answers.map(answer => {
+        if (answer in moodTotals) {
+          moodTotals[answer] += 1
         }
+      })}
+    })
+  })
+  // normalize by total responses
+  for (let field in moodTotals) {
+    for (let component of moodData) {
+      if (component.subject === field) {
+        component.Personal = moodResults.length ? moodTotals[field] / moodResults.length : 0
       }
     }
-    setMoodData(moodData)
-    console.log(moodData)
   }
-
+  setMoodData(moodData)
 }
 
 function load_local_national_results(userZIP, aggregateResults, covidData, setCovidData, moodData, setMoodData) {
@@ -134,6 +129,10 @@ function load_local_national_results(userZIP, aggregateResults, covidData, setCo
   if (covidResults.length) {
     covidResults.map((question, qIndex) => {
       const answerZIP = question[question.length - 1]
+      if (answerZIP === userZIP) {
+        localTotal++
+      }
+
       question.map(answers => {
         if (typeof answers === "object") {
           answers.map(answer => {
@@ -143,9 +142,6 @@ function load_local_national_results(userZIP, aggregateResults, covidData, setCo
 
             if (answerZIP === userZIP) {
               localCovidTotals[answer] += 1
-              if (qIndex === 0) {
-                localTotal ++
-              }
             }
           }
         })}
@@ -156,7 +152,9 @@ function load_local_national_results(userZIP, aggregateResults, covidData, setCo
       for (let component of covidData) {
         if (component.subject === field) {
           component.National = covidTotals[field] / covidResults.length
+          if (component.National === 0) component.National = NOISE_BUFF // a bit of noise, graphic enhancement
           component.Local = localTotal > 0 ? localCovidTotals[field] / localTotal : 0
+          if (component.Local === 0) component.Local = NOISE_BUFF // a bit of noise, graphic enhancement
         }
       }
     }
@@ -167,6 +165,10 @@ function load_local_national_results(userZIP, aggregateResults, covidData, setCo
   if (moodResults.length) {
     moodResults.map((question, qIndex) => {
       const answerZIP = question[question.length - 1]
+      if (answerZIP === userZIP) {
+        localTotal++
+      }
+
       question.map(answers => {
         if (typeof answers === "object") {
           answers.map(answer => {
@@ -175,9 +177,6 @@ function load_local_national_results(userZIP, aggregateResults, covidData, setCo
 
             if (answerZIP === userZIP) {
               localMoodTotals[answer] += 1
-              if (qIndex === 0) {
-                localTotal ++
-              }
             }
           }
         })}
@@ -188,7 +187,9 @@ function load_local_national_results(userZIP, aggregateResults, covidData, setCo
       for (let component of moodData) {
         if (component.subject === field) {
           component.National = moodTotals[field] / moodResults.length
+          if (component.National === 0) component.National = NOISE_BUFF // a bit of noise, graphic enhancement
           component.Local = localTotal > 0 ? localMoodTotals[field] / localTotal : 0
+          if (component.Local === 0) component.Local = NOISE_BUFF // a bit of noise, graphic enhancement
         }
       }
     }
