@@ -12,6 +12,7 @@ export default class UserForm extends Component {
         redirect: null,
     }
 
+    // Gets the info about the form
     componentDidMount = async () => {
         formId = this.props.match.params.formId
         await axios.get(`http://localhost:8001/addToForm?formId=${formId}`)
@@ -21,10 +22,10 @@ export default class UserForm extends Component {
             .catch((err) => {
                 console.error(err)
             })
-
         this.fetchQuestionList()
     }
 
+    // Gets the list of questions from the form
     fetchQuestionList = async () => {
         await axios.get(`http://localhost:8001/previewForm?formId=${formId}`)
             .then((res) => {
@@ -33,19 +34,20 @@ export default class UserForm extends Component {
             .catch((err) => {
                 console.error(err)
             })
-
     }
 
+    // Changes the state based on how the user interacts with the questions
     updateFields = (event) => {
         let updateField = event.target.name
         let updateVal = event.target.value
         let newAnswers = { ...this.state.answers, [updateField]: updateVal }
         this.setState({ answers: newAnswers })
-        console.log(this.state.answers)
     }
 
+    // Renders the questions for the user based on the questions in questionList
     renderQuestions = () => {
         return this.state.questionList.map((question, index) => {
+            // Renders MC questions
             if (question.inputType == "Multiple Choice") {
                 return (
                     <div key={index}>
@@ -57,6 +59,7 @@ export default class UserForm extends Component {
                     </div>
                 )
             } else {
+                // Renders non-MC questions
                 return (
                     <div key={index}>
                         <br />
@@ -75,6 +78,7 @@ export default class UserForm extends Component {
         })
     }
 
+    // Helper function to render the choices within MC questions
     renderChoices = (question) => {
         return question.choices.map((choice, index) => {
             return (
@@ -87,7 +91,8 @@ export default class UserForm extends Component {
         })
     }
 
-
+    // When the user submits form, the data is posted to the DB and the
+    // user is redirected back to browsing surveys
     handleSubmit = async (event) => {
         event.preventDefault()
 

@@ -7,7 +7,7 @@ export default class Responses extends Component {
         responses: null
     }
 
-
+    // Gets all of the responses for this form and sets the state with them
     componentDidMount = async () => {
         let formId = this.props.match.params.formId
         await axios.get(`http://localhost:8001/responses?formId=${formId}`)
@@ -19,26 +19,39 @@ export default class Responses extends Component {
             })
     }
 
+    // Renders all of the responses after they are retrieved
     renderResponses = () => {
-        let questions = []
-        console.log(this.state.responses)
         return this.state.responses.map((user, index) => {
             let response = Object.keys(user.answers)
-
             return (
                 <div key={index}>
                     <br />
+                    <br />
+                    -------------------
+                    <br />
                     Response ID: {user._id}
-                    <br />
-                    {response[0]} => {user.answers[response[0]]}
-                    <br />
-                    {response[1]} => {user.answers[response[1]]}
+                    {this.renderResponse(user, response)}
                 </div>
             )
         })
     }
 
+    // Helper function for renderResponses to render all of the fields within
+    // each response
+    renderResponse = (user, response) => {
+        return response.map((question, index) => {
+            return (
+                <div key={index}>
+                    <br />
+                    {question} => {user.answers[response[index]]}
+                </div>
+            )
+        })
+
+    }
+
     render() {
+        // Before info is loaded
         if (this.state.responses == null) {
             return (
                 <div>
@@ -47,6 +60,7 @@ export default class Responses extends Component {
             )
         }
 
+        // If there are no reponses yet
         if (this.state.responses.length == 0) {
             return (
                 <div>
@@ -54,6 +68,8 @@ export default class Responses extends Component {
                 </div>
             )
         }
+
+        // Else... Render the responses 
         return (
             <div>
                 {this.renderResponses()}

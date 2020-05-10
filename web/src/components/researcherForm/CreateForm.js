@@ -10,6 +10,7 @@ export default class ResearcherFormNew extends Component {
         redirect: null,
     }
 
+    // Creates the form in the DB and redirects to the newly created form
     createForm = async (event) => {
         event.preventDefault()
 
@@ -22,11 +23,9 @@ export default class ResearcherFormNew extends Component {
         }
 
         let formId
-
         await axios.post("http://localhost:8001/createForm", data)
             .then((res) => {
                 formId = res.data
-                // FIX - This id should be added to the authors list of studies so that it can later be retrieved
             })
             .catch((err) => {
                 console.error(err)
@@ -34,6 +33,7 @@ export default class ResearcherFormNew extends Component {
 
         this.setState({ redirect: `/researcherform/add/${formId}` })
     }
+
 
     render() {
         if (this.state.redirect) {
@@ -67,9 +67,7 @@ export default class ResearcherFormNew extends Component {
                         value={this.state.estimatedTime}
                         onChange={(event) => this.setState({ estimatedTime: event.target.value })}
                     />
-
                     <button onClick={this.createForm}>Create Form</button>
-
                 </form>
             </div>
         )

@@ -11,6 +11,7 @@ export default class ResearcherForm extends Component {
         questionList: []
     }
 
+    // Gets the info about the question the researcher is currently working on
     componentDidMount = async () => {
         formId = this.props.match.params.formId
         await axios.get(`http://localhost:8001/addToForm?formId=${formId}`)
@@ -20,10 +21,10 @@ export default class ResearcherForm extends Component {
             .catch((err) => {
                 console.error(err)
             })
-
         this.fetchQuestionList()
     }
 
+    // Gets the questions that have already been created by the researcher on this form
     fetchQuestionList = async () => {
         await axios.get(`http://localhost:8001/previewForm?formId=${formId}`)
             .then((res) => {
@@ -32,7 +33,6 @@ export default class ResearcherForm extends Component {
             .catch((err) => {
                 console.error(err)
             })
-
     }
 
     render() {

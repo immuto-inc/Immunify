@@ -7,12 +7,13 @@ export default class MultipleChoice extends Component {
         choices: [""],
     }
 
+    // Renders each of the inputs for the choices within the MC question
+    // so that the user can edit them
     renderChoices = () => {
         return this.state.choices.map((choice, index) => {
             return (
                 <div key={index}>
                     {index + 1} ->
-
                     <input
                         type="text"
                         id={index}
@@ -24,6 +25,8 @@ export default class MultipleChoice extends Component {
         })
     }
 
+    // Renders each of the the choices within the MC question
+    // so that the user can see what they will look like in the form
     sampleOfChoices = () => {
         return this.state.choices.map((choice, index) => {
             return (
@@ -36,17 +39,22 @@ export default class MultipleChoice extends Component {
         })
     }
 
+    // Allows the researcher to edit the labels for each of the choices
     changeChoiceValue = (event) => {
         let newChoices = this.state.choices
         newChoices[event.target.id] = event.target.value
         this.setState({ choices: newChoices })
     }
 
+    // Allows the researcher to add a new choice to their MC question
     addNewChoice = () => {
         let newChoices = this.state.choices.concat("")
         this.setState({ choices: newChoices })
     }
 
+    // Adds the question to the list of questions
+    // Fetches the new preview with the new question added
+    // Clears the inputs
     addToForm = async () => {
         const data = {
             formId: this.props.formId,
@@ -62,6 +70,8 @@ export default class MultipleChoice extends Component {
             })
 
         this.props.fetchQuestionList()
+        this.setState({ question: "" })
+        this.setState({ choices: [""] })
     }
 
 

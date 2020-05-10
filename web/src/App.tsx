@@ -43,6 +43,8 @@ function App() {
           <Route exact path="/dashboard">
             {() => <Dashboard authToken={authToken} />}
           </Route>
+
+
           <Route exact path="/researcherform/new">
             {() => <CreateForm authToken={authToken} />}
           </Route>

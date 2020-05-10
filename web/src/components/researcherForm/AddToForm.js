@@ -9,6 +9,8 @@ export default class AddToForm extends Component {
         showMultipleChoice: false,
     }
 
+    // Shows the user an example of what the question they are currently working on
+    // will look like in the form
     renderSampleInput = () => {
         return (
             <React.Fragment>
@@ -21,11 +23,12 @@ export default class AddToForm extends Component {
                 <input type={this.state.inputType} name="question" id="question" ></input>
                 <br />
                 --------------------
-
             </React.Fragment>
         )
     }
 
+    // The user can choose if they want their question to be text input, number input, 
+    // or multiple choice
     renderInputTypeButton = () => {
         return (
             <React.Fragment>
@@ -50,6 +53,10 @@ export default class AddToForm extends Component {
         this.setState({ showMultipleChoice: true })
     }
 
+
+    // Adds the question to the form
+    // Resets the preview down below to contain the newly added question
+    // Clears out the input
     addToForm = async () => {
         const data = {
             formId: this.props.formId,
@@ -62,10 +69,12 @@ export default class AddToForm extends Component {
             })
 
         this.props.fetchQuestionList()
+        this.setState({ question: "" })
     }
 
     render() {
         if (this.state.showMultipleChoice) {
+            // This renders if the researcher is working on a multiple choice question
             return (
                 <div>
                     {this.renderInputTypeButton()}
@@ -74,6 +83,7 @@ export default class AddToForm extends Component {
                 </div>
             )
         } else {
+            // This renders if the researcher is working on a text/ numeric question
             return (
                 <div>
                     {this.renderInputTypeButton()}
