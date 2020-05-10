@@ -221,11 +221,11 @@ const SurveyForm = (
       </Col>
       </Row>
       <Row className="mt-3">
-        <Col sm={4} xs={3}>
+        {/*<Col sm={4} xs={12}>
           <span className="survey-header-item">Community Completion <br/>
           <span className="survey-header-value"> {communityCompletion}%</span>
           </span>
-        </Col>
+        </Col>*/}
         <Col>
           <span className="survey-header-item">No. Questions <br/>
           <span className="survey-header-value">{questions.length}</span>

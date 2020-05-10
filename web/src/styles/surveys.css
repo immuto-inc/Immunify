@@ -53,9 +53,6 @@
     max-height: 90vh;
 }
 
-/* Disable scroll on body */
-html, body {margin: 0; height: 100%; overflow: hidden} 
-
 .survey-title {
     font-size: 1.5rem;
     font-weight: 700;

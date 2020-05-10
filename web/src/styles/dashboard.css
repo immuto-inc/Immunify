@@ -359,6 +359,51 @@ body {
   }
 }
 
+@media (max-width: 576px) {
+  .sidebar {
+    width: 3.25rem !important;
+  }
+  #main {
+    margin-left: 3.25rem !important; /* Same as .sidebar */
+  }
+  #footer {
+    width: calc(100% - 3.25rem);
+  }
+
+  .sidebar.nav-item {
+    padding-left: 0px !important;
+  }
+
+  .sidebar.nav-item span {
+    text-align: center !important;
+  }
+
+  .sidebarTitle {
+    display: none;
+  }
+
+  .sidebarIconWrapper {
+    display: block;
+    margin-bottom: 5px;
+    text-align: center;
+  }
+
+  .sidebar-heading {
+    display: none;
+  }
+}
+
+@media (max-width: 450px) {
+  .sidebar {
+    width: 0rem !important;
+  }
+  #main {
+    margin-left: 0rem !important; /* Same as .sidebar */
+  }
+  #footer {
+    width: calc(100% - 0rem);
+  }
+}
 .privacy-notice {
   font-size: 1.25rem;
 }
