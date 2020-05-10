@@ -47,6 +47,7 @@ const Register = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [passwordConfirmation, setPasswordConfirmation] = useState("")
+  const [processingRegistration, setProcessingRegistration] = useState(false)
 
   const handleEmailChange = (e : React.ChangeEvent<HTMLInputElement>) => {
      setEmail(e.target.value);
@@ -59,6 +60,8 @@ const Register = () => {
   }
 
   function handleForm(e : React.FormEvent<HTMLFormElement>) {
+      setProcessingRegistration(true)
+
       if (im.authToken) {
           im.deauthenticate()
       }
@@ -69,10 +72,15 @@ const Register = () => {
         alert("Passwords must match"); return;
       }
 
-      register_user(email, password).then((result) => {
+      register_user(email, password)
+      .then((result) => {
         history.push('/login')          
-      }).catch((err) => {
+      })
+      .catch((err) => {
           alert(`Error on registration: ${err}`)
+      })
+      .finally(() => {
+        setProcessingRegistration(false)
       })
   }
 
@@ -133,6 +141,7 @@ const Register = () => {
             fullWidth
             variant="contained"
             color="primary"
+            disabled={processingRegistration}
             className={classes.submit}
           >
             Sign Up

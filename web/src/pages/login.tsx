@@ -48,6 +48,8 @@ const Login = ({setAuthToken} : {setAuthToken : Dispatch<SetStateAction<string>>
   const history = useHistory();
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [processingLogin, setProcessingLogin] = useState(false)
+
 
   const handleEmailChange = (e : React.ChangeEvent<HTMLInputElement>) => {
      setEmail(e.target.value);
@@ -57,6 +59,8 @@ const Login = ({setAuthToken} : {setAuthToken : Dispatch<SetStateAction<string>>
   }
 
   function handleForm(e : React.FormEvent<HTMLFormElement>) {
+    setProcessingLogin(true)
+
     e.preventDefault()
 
     if (im.authToken) {
@@ -66,14 +70,19 @@ const Login = ({setAuthToken} : {setAuthToken : Dispatch<SetStateAction<string>>
     im.authenticate(email, password).then((authToken : string) => {
       window.localStorage.password=password
         create_user_session(authToken).then(() => {
+          window.localStorage.authToken=authToken
           setAuthToken(authToken)
           history.push('/dashboard')          
         }).catch((err : string) => {
           console.log(err)
           alert("Error logging in: " + err)
         })
+        .finally(() => {
+          setProcessingLogin(false)
+        })
     }).catch((err : string) => {
-        alert("Unable to login: \n" + err)
+      setProcessingLogin(false)  
+      alert("Unable to login: \n" + err)
     })
   }
 
@@ -121,6 +130,7 @@ const Login = ({setAuthToken} : {setAuthToken : Dispatch<SetStateAction<string>>
             fullWidth
             variant="contained"
             color="primary"
+            disabled={processingLogin}
             className={classes.submit}
           >
             Sign In
