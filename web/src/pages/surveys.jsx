@@ -133,6 +133,7 @@ const Surveys = ({authToken, userInfo, setUserInfo, profileInfo, outstandingSurv
                     privacyNotice=' '
                     handleSubmit={responses => {
                       let identifier = survey.identifier || survey._id
+                      responses.push(today_as_string()) // include date with survey response
                       let responseString = JSON.stringify(responses)
                       let userPassword = window.localStorage.password
                       im.create_data_management(responseString, identifier, "editable", userPassword, "")

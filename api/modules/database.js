@@ -120,13 +120,18 @@ exports.set_profile_info = (userEmail, recordID) => {
     })
 }
 
-exports.update_user_response = (userEmail, surveyID, today, points) => {
+exports.update_user_response = (userEmail, surveyID, today, points, recordID) => {
     return new Promise((resolve, reject) => {
         let setIdToToday = {}
         setIdToToday[surveyID] = today
+
+        let pushRecordID = {}
+        pushRecordID[surveyID + "_transactions"] = recordID 
+
         let update = { 
             $set: setIdToToday, 
-            $inc: { score: points } 
+            $inc: { score: points },
+            $push: pushRecordID
         }
         let query = {email: userEmail, profileInfo: { $exists: true} }
         DB.collection("users").updateOne(query, update, (err, userInfo) => {

@@ -167,7 +167,7 @@ ROUTE_VALIDATION['/record-survey-response'] = { // may be worth adding individua
   'userZIP': valid.VALIDATE_ZIP_OR_NA
 }
 app.post('/record-survey-response', requireAuth, validateInput, async (req, res) => { 
-  let { surveyID, surveyResponse, userZIP } = req.validated
+  let { recordID, surveyID, surveyResponse, userZIP } = req.validated
   surveyResponse = JSON.parse(surveyResponse)
   const today = today_as_string()
 
@@ -181,24 +181,36 @@ app.post('/record-survey-response', requireAuth, validateInput, async (req, res)
       return;
     }
 
+    surveyResponse.pop() // remove date, to be added back later
+    if (surveyResponse.length !== surveyInfo.questions.length) {
+        res.status(400).end("All questions must be answered");
+        return;
+    }
     surveyResponse.map((responses, rIndex) => {
       const validAnswers = surveyInfo.questions[rIndex].answers
+      if (responses.length === 0) {
+          res.status(400).end(`No response provided for question ${rIndex + 1}`)
+          return
+      }
+
       for (let response of responses) {
         if (!validAnswers.includes(response)) {
           res.status(400).end(`Invalid response for question ${rIndex + 1}: ${response}`)
+          return
         }
       }
     })
+    surveyResponse.push(today_as_string())
 
-    surveyResponse.push(today)
     surveyResponse.push(userZIP)
     let update = await DB.add_response_for_survey(surveyID, surveyResponse)
     let userUpdate = await DB.update_user_response(
       req.session.email, 
       surveyID, 
       today, 
-      surveyInfo.pointValue
-      )
+      surveyInfo.pointValue,
+      recordID
+    )
 
     res.status(204).end()
   } catch(err) {

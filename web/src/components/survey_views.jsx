@@ -294,6 +294,7 @@ const NewSurveysView = ({surveys, handleSurveyClick, userInfo}) => {
   surveys = surveys || []
   userInfo = userInfo || {}
   let today = today_as_string()
+  let numOutstanding = 0
 
   return (
     <div>
@@ -310,6 +311,7 @@ const NewSurveysView = ({surveys, handleSurveyClick, userInfo}) => {
 
             if (userInfo[identifier] === today) return;
 
+            numOutstanding ++;
             return (
                 <Col key={_id} className="mb-4" onClick={(e) => handleSurveyClick(_id)}> 
                 <SurveyCard title={title} description={description} type={type} sponsor={sponsor}/>
@@ -319,27 +321,28 @@ const NewSurveysView = ({surveys, handleSurveyClick, userInfo}) => {
       </Row>
       <hr/> 
 
-    <h4 className="mt-4">Completed Surveys</h4>
+    {numOutstanding !== surveys.length ? <div>
+      <h4 className="mt-4">Completed Surveys</h4>
 
-    <Row xs={1} sm={1} md={2} lg={2} xl={2}>
-        {surveys.map((survey) => {
-            let title = unescape(survey.title)
-            let description = unescape(survey.description)
-            let type = unescape(survey.type)
-            let sponsor = unescape(survey.sponsor)
-            let _id = survey._id
-            let identifier = survey.identifier || _id
+      <Row xs={1} sm={1} md={2} lg={2} xl={2}>
+          {surveys.map((survey) => {
+              let title = unescape(survey.title)
+              let description = unescape(survey.description)
+              let type = unescape(survey.type)
+              let sponsor = unescape(survey.sponsor)
+              let _id = survey._id
+              let identifier = survey.identifier || _id
 
-            if (userInfo[identifier] !== today) return;
+              if (userInfo[identifier] !== today) return;
 
-            return (
-                <Col key={_id} className="mb-4" onClick={(e) => handleSurveyClick(_id)}> 
-                <SurveyCard title={title} description={description} type={type} sponsor={sponsor}/>
-                </Col>
-            );
-          })}
-      </Row>
-      <hr/> 
+              return (
+                  <Col key={_id} className="mb-4" onClick={(e) => handleSurveyClick(_id)}> 
+                  <SurveyCard title={title} description={description} type={type} sponsor={sponsor}/>
+                  </Col>
+              );
+            })}
+        </Row>
+        <hr/></div> : ""}
 
     </div>
   );
