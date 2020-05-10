@@ -85,7 +85,7 @@ function App() {
   useEffect(() => { 
     if (!userInfo) return;
 
-    if (userInfo["COVID_transactions"].length) {
+    if (userInfo["COVID_transactions"] && userInfo["COVID_transactions"].length) {
         userInfo["COVID_transactions"].map(recordID => {
             load_survey_response(recordID)
             .then(covidResults => {
@@ -96,7 +96,7 @@ function App() {
         })
     }
 
-    if (userInfo["MOOD_transactions"].length) {
+    if (userInfo["MOOD_transactions"] && userInfo["MOOD_transactions"].length) {
         userInfo["MOOD_transactions"].map(recordID => {
             load_survey_response(recordID)
             .then(covidResults => {
