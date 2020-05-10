@@ -8,6 +8,7 @@ import { useHistory } from "react-router-dom"
 
 import PageTitle from "../components/page_title"
 import SurveyForm, { NewSurveysView } from "../components/survey_views"
+import ChartView from "../components/chart_views"
 
 import { API_URL, IMMUTO_URL } from "../utils";
 import immuto from "../immuto"
@@ -120,11 +121,20 @@ const Dashboard = ({authToken, userInfo, outstandingSurveys, surveyResults}) => 
       </Container>
     );
   }
-  
+  if (userInfo.score === 100) {
+    return (
+      <Container fluid> 
+        <PageTitle pageName="Dashboard" score={userInfo.score}/>   
+        Thanks for completing your onboarding survey! Complete one of the surveys below to unlock community insights.
+        <NewSurveysView surveys={outstandingSurveys} userInfo={userInfo}
+                        handleSurveyClick={surveyID => history.push(`/surveys/${surveyID}`)}/>
+      </Container>
+    );
+  }
   return (
     <Container fluid> 
       <PageTitle pageName="Dashboard" score={userInfo.score}/>   
-      {userInfo.score === 100 ? "Thanks for completing your onboarding survey! Complete one of the surveys below to unlock community insights." : ""}
+      <ChartView/>
       <NewSurveysView surveys={outstandingSurveys} userInfo={userInfo}
                       handleSurveyClick={surveyID => history.push(`/surveys/${surveyID}`)}/>
     </Container>
