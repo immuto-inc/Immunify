@@ -32,6 +32,23 @@ export function get_user_info(authToken : string) {
   })
 }
 
+export function get_survey_info(authToken : string, surveyID : string) {
+  return new Promise((resolve, reject) => {
+    authToken = authToken || window.localStorage.authToken
+    let url = `${API_URL}/survey-info?authToken=${authToken}`;
+    url += "&surveyID=" + surveyID
+    fetch(url, {})
+    .then(res => res.json())
+    .then(
+      (result) => {
+        resolve(result)
+      },
+      (err) => {
+        reject(err)
+      })
+  })
+}
+
 export function today_as_string() {
   let today = new Date();
   let dd = String(today.getUTCDate()).padStart(2, '0');

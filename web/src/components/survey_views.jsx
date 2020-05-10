@@ -313,7 +313,7 @@ const NewSurveysView = ({surveys, handleSurveyClick, userInfo}) => {
 
             numOutstanding ++;
             return (
-                <Col key={_id} className="mb-4" onClick={(e) => handleSurveyClick(_id)}> 
+                <Col key={_id} className="mb-4" onClick={(e) => handleSurveyClick(identifier)}> 
                 <SurveyCard title={title} description={description} type={type} sponsor={sponsor}/>
                 </Col>
             );
@@ -336,7 +336,7 @@ const NewSurveysView = ({surveys, handleSurveyClick, userInfo}) => {
               if (userInfo[identifier] !== today) return;
 
               return (
-                  <Col key={_id} className="mb-4" onClick={(e) => handleSurveyClick(_id)}> 
+                  <Col key={_id} className="mb-4" onClick={(e) => handleSurveyClick(identifier)}> 
                   <SurveyCard title={title} description={description} type={type} sponsor={sponsor}/>
                   </Col>
               );

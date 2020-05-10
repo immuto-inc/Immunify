@@ -36,14 +36,14 @@ function App() {
       type: "medical",
       sponsor: "Immunify",
       description: "A short survey for COVID-19 related symptoms",
-      _id: "COVID"
+      identifier: "COVID"
     },
     {
       title: "Daily Mood Check-in",
       type: "mental",
       sponsor: "Immunify",
       description: "A short survey for tracking your mood and mental well-being",
-      _id: "MOOD"
+      identifier: "MOOD"
     }
   ])
 
