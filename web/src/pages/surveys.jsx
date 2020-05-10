@@ -48,7 +48,7 @@ const Surveys =
       setSurvey(surveyInfo)
     })
     .catch(err => console.error(err))
-  }, [userInfo, surveyID]);
+  }, [userInfo, surveyID, authToken]);
 
   authToken = authToken || window.localStorage.authToken
   if (!authToken) {history.push('/login');}

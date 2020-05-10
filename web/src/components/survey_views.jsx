@@ -33,7 +33,7 @@ setComplete, setIncomplete, setSelectedValue}) => {
 
   let defaultState = []
   answers.map(a => {
-    defaultState.push(false);
+    return defaultState.push(false);
   })
 
   const [questionState, setQuestionState] = useState(defaultState)
@@ -47,6 +47,7 @@ setComplete, setIncomplete, setSelectedValue}) => {
         if (qIndex !== index) {
           questionState[qIndex] = false
         }
+        return undefined
       })
     }
     setQuestionState([...questionState])
@@ -58,6 +59,7 @@ setComplete, setIncomplete, setSelectedValue}) => {
         selectedAnswers.push(answers[aIndex])
         answersChecked++; 
       }
+      return undefined
     })
 
     setSelectedValue(selectedAnswers)
@@ -175,16 +177,20 @@ const SurveyForm = (
   const [handleingSubmit, setHandleingSubmit] = useState(false)
 
   useEffect(() => {   
+    if (surveyCompletion.length || surveyValues.length) return;
+
     questions.map((question, qIndex) => {
       surveyCompletion.push(false)
       surveyValues.push('')
+      return undefined
     })
-  }, []);
+  }, [questions, surveyCompletion, surveyValues]);
 
   const completionStatus = (currentCompletion) => {
     let completionCount = 0
     currentCompletion.map(isCompleted => {
       if (isCompleted) {completionCount++;}
+      return undefined
     })
     return (completionCount / questions.length) * 100
   }
@@ -315,7 +321,7 @@ const NewSurveysView = ({surveys, handleSurveyClick, userInfo}) => {
             let _id = survey._id
             let identifier = survey.identifier || _id
 
-            if (userInfo[identifier] === today) return;
+            if (userInfo[identifier] === today) return '';
 
             numOutstanding ++;
             return (
@@ -342,7 +348,7 @@ const NewSurveysView = ({surveys, handleSurveyClick, userInfo}) => {
               let _id = survey._id
               let identifier = survey.identifier || _id
 
-              if (userInfo[identifier] !== today) return;
+              if (userInfo[identifier] !== today) return '';
 
               return (
                   <Col key={identifier} className="mb-4" onClick={(e) => handleSurveyClick(identifier)}> 

@@ -60,7 +60,8 @@ function App() {
   const [authToken, setAuthToken] = useState(window.localStorage.authToken)
   const [userInfo, setUserInfo] = useState(undefined)
   const [profileInfo, setProfileInfo] = useState(undefined)
-  const [outstandingSurveys, setOutstandingSurveys] = useState([
+  // const [outstandingSurveys, setOutstandingSurveys] = useState([])
+  const outstandingSurveys = [
     {
       title: "Daily COVID Check-in",
       type: "medical",
@@ -75,7 +76,7 @@ function App() {
       description: "A short survey for tracking your mood and mental well-being",
       identifier: "MOOD"
     }
-  ])
+  ]
   const [surveyResults, setSurveyResults] = useState({
     "COVID": [],
     "MOOD": []
@@ -110,7 +111,7 @@ function App() {
 
     if (userInfo["COVID_transactions"] && userInfo["COVID_transactions"].length) {
         userInfo["COVID_transactions"].map(recordID => {
-            load_survey_response(recordID)
+            return load_survey_response(recordID)
             .then(covidResults => {
                 surveyResults["COVID"].push(covidResults)
                 setSurveyResults(surveyResults)
@@ -121,7 +122,7 @@ function App() {
 
     if (userInfo["MOOD_transactions"] && userInfo["MOOD_transactions"].length) {
         userInfo["MOOD_transactions"].map(recordID => {
-            load_survey_response(recordID)
+            return load_survey_response(recordID)
             .then(covidResults => {
                 surveyResults["MOOD"].push(covidResults)
                 setSurveyResults(surveyResults)
@@ -129,24 +130,28 @@ function App() {
             .catch(err => console.error(err))
         })
     }
-  }, [userInfo]);
+  }, [userInfo, surveyResults]);
 
   useEffect(() => { 
     if (!authToken) return;
 
-    load_aggregate_responses("MOOD", authToken) 
-    .then(responses => { 
-        aggregateResults["MOOD"] = responses
-        setAggregateResults(aggregateResults)
-    })
-    .catch(err => console.error(err))
-    load_aggregate_responses("COVID", authToken) 
-    .then(responses => { 
-        aggregateResults["COVID"] = responses
-        setAggregateResults(aggregateResults)
-    })
-    .catch(err => console.error(err))
-  }, []);
+    if (aggregateResults["MOOD"].length === 0) {
+        load_aggregate_responses("MOOD", authToken) 
+        .then(responses => { 
+            aggregateResults["MOOD"] = responses
+            setAggregateResults(aggregateResults)
+        })
+        .catch(err => console.error(err))
+    }
+    if (aggregateResults["COVID"].length === 0) {
+        load_aggregate_responses("COVID", authToken) 
+        .then(responses => { 
+            aggregateResults["COVID"] = responses
+            setAggregateResults(aggregateResults)
+        })
+        .catch(err => console.error(err))
+    }
+  }, [aggregateResults, authToken]);
 
   return (
     <Router>

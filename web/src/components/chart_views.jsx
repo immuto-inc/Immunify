@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { 
-    Container, 
     Row,
     Col,
     Pagination
@@ -67,12 +66,16 @@ function load_personal_results(surveyResults, covidData, setCovidData, moodData,
     question.map(answers => {
       if (typeof answers === "object") {
         answers.map(answer => {
-        if (answer === "Loss of taste or smell") { answer = "Sensory loss" }
-        if (answer in covidTotals) {
-          covidTotals[answer] += 1
-        }
-      })}
+          if (answer === "Loss of taste or smell") { answer = "Sensory loss" }
+          if (answer in covidTotals) {
+            covidTotals[answer] += 1
+          }
+          return ''
+        })
+      }
+      return ''
     })
+    return ''
   })
   // normalize by total responses
   for (let field in covidTotals) {
@@ -91,8 +94,11 @@ function load_personal_results(surveyResults, covidData, setCovidData, moodData,
         if (answer in moodTotals) {
           moodTotals[answer] += 1
         }
+        return ''
       })}
+      return ''
     })
+    return ''
   })
   // normalize by total responses
   for (let field in moodTotals) {
@@ -144,9 +150,13 @@ function load_local_national_results(userZIP, aggregateResults, covidData, setCo
               localCovidTotals[answer] += 1
             }
           }
+          return ''
         })}
+        return ''
       })
+      return ''
     })
+
     // normalize by total responses
     for (let field in covidTotals) {
       for (let component of covidData) {
@@ -179,8 +189,11 @@ function load_local_national_results(userZIP, aggregateResults, covidData, setCo
               localMoodTotals[answer] += 1
             }
           }
+          return ''
         })}
+        return ''
       })
+      return ''
     })
     // normalize by total responses
     for (let field in moodTotals) {
@@ -208,13 +221,13 @@ const ChartView = ({profileInfo, surveyResults, aggregateResults}) => {
     if (surveyResults["COVID"].length === 0 && surveyResults["MOOD"].length === 0) return;
 
     load_personal_results(surveyResults, covidData, setCovidData, moodData, setMoodData)
-  }, [surveyResults]);
+  }, [surveyResults, covidData, moodData]);
 
   useEffect(() => { 
     if (!profileInfo) return;
      
     load_local_national_results(profileInfo[2] /* user ZIP */, aggregateResults, covidData, setCovidData, moodData, setMoodData)
-  }, [profileInfo]);
+  }, [aggregateResults, covidData, moodData, profileInfo]);
 
   if (!profileInfo) {
     return <div>

@@ -1,8 +1,6 @@
 import React from "react";
 import { 
     Container, 
-    Row,
-    Col
 } from "react-bootstrap";
 import { useHistory } from "react-router-dom"
 
@@ -121,11 +119,11 @@ const Dashboard = ({authToken, aggregateResults, profileInfo, userInfo, outstand
       </Container>
     );
   }
-  if (userInfo.score === 100) {
+  if (userInfo.score === 100 || !userInfo["MOOD"] || !userInfo["COVID"]) {
     return (
       <Container fluid> 
         <PageTitle pageName="Dashboard" score={userInfo.score}/>   
-        Thanks for completing your onboarding survey! Complete one of the surveys below to unlock community insights.
+        Thanks for completing your onboarding survey! Complete the surveys below to unlock community insights.
         <NewSurveysView surveys={outstandingSurveys} userInfo={userInfo}
                         handleSurveyClick={surveyID => history.push(`/surveys/${surveyID}`)}/>
       </Container>
