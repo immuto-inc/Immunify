@@ -134,15 +134,6 @@ const Surveys =
     );
   }
 
-  if (!profileInfo) {
-    return (
-      <Container fluid> 
-        <PageTitle pageName="Surveys" score={userInfo.score}/> 
-        <span>Loading survey content ...</span>
-      </Container>
-    );
-  }
-
   return (
       <Container fluid> 
         <PageTitle pageName="Surveys" score={userInfo.score}/> 
