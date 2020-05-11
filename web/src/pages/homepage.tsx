@@ -3,7 +3,6 @@ import AppBar from '@material-ui/core/AppBar';
 import Button from '@material-ui/core/Button';
 import NavbarIcon from '@material-ui/icons/GroupWorkOutlined';
 import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import Grid from '@material-ui/core/Grid';
@@ -13,6 +12,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import Link from '@material-ui/core/Link';
 import IconButton from '@material-ui/core/IconButton';
+import Grow from '@material-ui/core/Grow';
 
 import dashboard from '../images/dashboard.png';
 import symptoms from '../images/symptoms.png';
@@ -31,6 +31,9 @@ const useStyles = makeStyles((theme) => ({
   button: {
     backgroundColor: '#1675b8'
   },
+  loginButton: {
+    backgroundColor: '#f8f9fc'
+  },
   toolBar: {
     backgroundColor: '#1675b8'
   },
@@ -44,7 +47,6 @@ const useStyles = makeStyles((theme) => ({
   },
   card: {
     backgroundColor: '#f8f9fc',
-    height: '100%',
     display: 'flex',
     flexDirection: 'column',
   },
@@ -87,11 +89,11 @@ const Homepage = () => {
           <Typography variant="h6" className={classes.title}>
             <Link color="inherit" href="/" style={{textDecoration: 'none'}}> Immunify </Link>
           </Typography>
-          <Button color="secondary" variant="outlined" href="/login">Login</Button>
+          <Button className={classes.loginButton} variant="outlined" href="/login">Login</Button>
         </Toolbar>
       </AppBar>
       <main>
-        {/* Hero unit */}
+         {/* Hero unit */}
         <div className={classes.heroContent}>
           <Container maxWidth="sm">
             <Typography component="h1" variant="h2" align="center" color="textPrimary" gutterBottom>
@@ -121,18 +123,19 @@ const Homepage = () => {
           <Grid container spacing={2}>
             {cards.map((card, idx) => (
               <Grid item key={idx} xs={4} sm={4} md={4}>
-                <Card className={classes.card}>
-                  <CardMedia
-                    className={classes.cardMedia}
-                    image={card['image']} 
-                    title="Image title"
-                  />
-                  <CardContent className={classes.cardContent}>
-                    <Typography gutterBottom variant="h5" component="h2" align='center'>
-                      {card['text']}
-                    </Typography>
-                  </CardContent>
-                </Card>
+                <Grow in={true} timeout={(idx + 1) * 1000}>
+                  <Card className={classes.card}>
+                    <CardMedia
+                      className={classes.cardMedia}
+                      image={card['image']} 
+                    />
+                    <CardContent className={classes.cardContent}>
+                      <Typography gutterBottom variant="h5" component="h2" align='center'>
+                        {card['text']}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grow>
               </Grid>
             ))}
           </Grid>
