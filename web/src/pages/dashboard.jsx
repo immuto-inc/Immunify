@@ -16,7 +16,7 @@ export const im = immuto.init(true, IMMUTO_URL);
 const oboardingQuestions = [
   {
     questionText: "Select your age range",
-    answers: ["18 or younger", "18-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75 or older"],
+    answers: ["17 or younger", "18-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75 or older"],
     type: "radio"
   },
   {
