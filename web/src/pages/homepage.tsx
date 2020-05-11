@@ -14,25 +14,36 @@ import Container from '@material-ui/core/Container';
 import Link from '@material-ui/core/Link';
 import IconButton from '@material-ui/core/IconButton';
 
+import dashboard from '../images/dashboard.png';
+import symptoms from '../images/symptoms.png';
+import survey from '../images/survey.png';
+import Footer from '../components/footer';
 
-import Footer from "../components/footer"
 
 const useStyles = makeStyles((theme) => ({
   menuButton: {
     marginRight: theme.spacing(0),
   },
   heroContent: {
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: '#f8f9fc',
     padding: theme.spacing(8, 0, 6),
+  },
+  button: {
+    backgroundColor: '#1675b8'
+  },
+  toolBar: {
+    backgroundColor: '#1675b8'
   },
   heroButtons: {
     marginTop: theme.spacing(4),
   },
   cardGrid: {
+    backgroundColor: '#f8f9fc',
     paddingTop: theme.spacing(8),
     paddingBottom: theme.spacing(8),
   },
   card: {
+    backgroundColor: '#f8f9fc',
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
@@ -48,7 +59,20 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const cards = [1, 2, 3, 4, 5, 6, 7, 8];
+const cards = [
+  {
+    text: 'Participate in Research Studies from your Home',
+    image: dashboard
+  },
+  {
+    text: 'Log and Track your Physical and Mental Health ',
+    image: symptoms
+  },
+  {
+    text: 'Maintain Full Control of your Personal Data ',
+    image: survey
+  }
+];
 
 const Homepage = () => {
   const classes = useStyles();
@@ -56,7 +80,7 @@ const Homepage = () => {
   return (
     <React.Fragment>
       <AppBar position="static">
-        <Toolbar>
+        <Toolbar className={classes.toolBar}>
           <IconButton edge="start" className={classes.menuButton} color="inherit" href="/" aria-label="refresh">
             <NavbarIcon />
           </IconButton>
@@ -79,12 +103,12 @@ const Homepage = () => {
             <div className={classes.heroButtons}>
               <Grid container spacing={2} justify="center">
                 <Grid item>
-                  <Button variant="contained" color="primary" href="/register">
+                  <Button variant="outlined" className={classes.button} href="/register">
                     Get Started
                   </Button>
                 </Grid>
                 <Grid item>
-                  <Button variant="outlined" color="primary" href="/login">
+                  <Button variant="outlined" className={classes.button} href="/login">
                     Sign In
                   </Button>
                 </Grid>
@@ -92,40 +116,29 @@ const Homepage = () => {
             </div>
           </Container>
         </div>
-        <Container className={classes.cardGrid} maxWidth="md">
+        <Container className={classes.cardGrid} maxWidth="xl">
           {/* End hero unit */}
-          <Grid container spacing={4}>
-            {cards.map((card) => (
-              <Grid item key={card} xs={12} sm={6} md={4}>
+          <Grid container spacing={2}>
+            {cards.map((card, idx) => (
+              <Grid item key={idx} xs={4} sm={4} md={4}>
                 <Card className={classes.card}>
                   <CardMedia
                     className={classes.cardMedia}
-                    image="https://source.unsplash.com/random"
+                    image={card['image']} 
                     title="Image title"
                   />
                   <CardContent className={classes.cardContent}>
-                    <Typography gutterBottom variant="h5" component="h2">
-                      Heading
-                    </Typography>
-                    <Typography>
-                      This is a media card. You can use this section to describe the content.
+                    <Typography gutterBottom variant="h5" component="h2" align='center'>
+                      {card['text']}
                     </Typography>
                   </CardContent>
-                  <CardActions>
-                    <Button size="small" color="primary">
-                      View
-                    </Button>
-                    <Button size="small" color="primary">
-                      Edit
-                    </Button>
-                  </CardActions>
                 </Card>
               </Grid>
             ))}
           </Grid>
         </Container>
       </main>
-      <Footer/>
+      <Footer />
     </React.Fragment>
   );
 }
