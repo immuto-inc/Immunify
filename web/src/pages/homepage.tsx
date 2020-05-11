@@ -150,7 +150,7 @@ const Homepage = () => {
                   <Card className={classes.card}>
                   <CardContent className={classes.cardContent}>
                       <Typography gutterBottom variant="h5" component="h2" align='center'>
-                        {"View community-level and national results from anonymized user data"}
+                        {"View Community-Level and National Results from Anonymized User Data"}
                       </Typography>
                     </CardContent>
                     <CardMedia
