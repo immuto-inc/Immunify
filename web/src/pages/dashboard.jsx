@@ -83,7 +83,7 @@ const Dashboard = (
       window.localStorage.authToken = ""
       history.push('/login')
     })
-  }, [authToken])
+  }, [authToken, history])
 
   if (!userInfo) {
     return (

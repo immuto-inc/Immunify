@@ -1,17 +1,26 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { 
     Container, 
     Card
 } from "react-bootstrap";
 import { useHistory } from "react-router-dom"
 
+import { check_logged_in } from "../utils"
+
 import PageTitle from "../components/page_title"
 
 const Profile = ({authToken, userInfo, profileInfo}) => {
   let history = useHistory()  
 
-  authToken = authToken || window.localStorage.authToken
-  if (!authToken) {history.push('/login');}
+  useEffect(() => {
+    check_logged_in(authToken)
+    .then(result => {console.log("Authenticated")})
+    .catch(err => {
+      console.error(err)
+      window.localStorage.authToken = ""
+      history.push('/login')
+    })
+  }, [authToken, history])
   
   if (!userInfo) {
     return (
