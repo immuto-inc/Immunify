@@ -1,7 +1,6 @@
 import React from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import Button from '@material-ui/core/Button';
-import NavbarIcon from '@material-ui/icons/GroupWorkOutlined';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
@@ -17,8 +16,11 @@ import Grow from '@material-ui/core/Grow';
 import dashboard from '../images/dashboard.png';
 import symptoms from '../images/symptoms.png';
 import survey from '../images/survey.png';
-import Footer from '../components/footer';
+import community from '../images/community_results.png';
+// import logo from '../images/logo_bw.png';
+import icon from '../images/logo_bw_dots.png';
 
+import Footer from '../components/footer';
 
 const useStyles = makeStyles((theme) => ({
   menuButton: {
@@ -29,7 +31,7 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(8, 0, 6),
   },
   button: {
-    backgroundColor: '#1675b8'
+    backgroundColor: '#21a1da'
   },
   loginButton: {
     backgroundColor: '#f8f9fc'
@@ -42,8 +44,8 @@ const useStyles = makeStyles((theme) => ({
   },
   cardGrid: {
     backgroundColor: '#f8f9fc',
-    paddingTop: theme.spacing(8),
-    paddingBottom: theme.spacing(8),
+    paddingTop: theme.spacing(1),
+    paddingBottom: theme.spacing(1)
   },
   card: {
     backgroundColor: '#f8f9fc',
@@ -82,14 +84,14 @@ const Homepage = () => {
   return (
     <React.Fragment>
       <AppBar position="static">
-        <Toolbar className={classes.toolBar}>
-          <IconButton edge="start" className={classes.menuButton} color="inherit" href="/" aria-label="refresh">
-            <NavbarIcon />
+        <Toolbar className={classes.toolBar} style={{color: "white"}}>
+          <IconButton edge="start" className={classes.menuButton} href="/" style={{color: "white"}} aria-label="refresh">
+            <img alt="Immunify Icon" src={icon} height="25"/>
           </IconButton>
           <Typography variant="h6" className={classes.title}>
-            <Link color="inherit" href="/" style={{textDecoration: 'none'}}> Immunify </Link>
+            <Link  href="/" style={{textDecoration: 'none', color: "white"}}> Immunify </Link>
           </Typography>
-          <Button className={classes.loginButton} variant="outlined" href="/login">Login</Button>
+          <Button className={classes.loginButton} variant="contained" href="/login">Login</Button>
         </Toolbar>
       </AppBar>
       <main>
@@ -105,12 +107,12 @@ const Homepage = () => {
             <div className={classes.heroButtons}>
               <Grid container spacing={2} justify="center">
                 <Grid item>
-                  <Button variant="outlined" className={classes.button} href="/register">
+                  <Button variant="contained" className={classes.button} href="/register">
                     Get Started
                   </Button>
                 </Grid>
                 <Grid item>
-                  <Button variant="outlined" className={classes.button} href="/login">
+                  <Button variant="outlined" className={classes.loginButton} href="/login">
                     Sign In
                   </Button>
                 </Grid>
@@ -138,6 +140,27 @@ const Homepage = () => {
                 </Grow>
               </Grid>
             ))}
+          </Grid>
+        </Container>
+        <Container className={classes.cardGrid} maxWidth="xl">
+          {/* End hero unit */}
+          <Grid container>
+              <Grid item  xs={12} sm={12} md={12}>
+                <Grow in={true} timeout={3000}>
+                  <Card className={classes.card}>
+                  <CardContent className={classes.cardContent}>
+                      <Typography gutterBottom variant="h5" component="h2" align='center'>
+                        {"View community-level and national results from anonymized user data"}
+                      </Typography>
+                    </CardContent>
+                    <CardMedia
+                      className={classes.cardMedia}
+                      image={community} 
+                    />
+                    
+                  </Card>
+                </Grow>
+              </Grid>
           </Grid>
         </Container>
       </main>

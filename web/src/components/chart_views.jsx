@@ -113,6 +113,7 @@ function load_personal_results(surveyResults, covidData, setCovidData, moodData,
 }
 
 function load_local_national_results(userZIP, aggregateResults, covidData, setCovidData, moodData, setMoodData) {
+  const LOCAL_DISTANCE = 1
   let covidResults = aggregateResults["COVID"]
   let covidTotals = { 
     'Shortness of breath': 0, 
@@ -136,7 +137,7 @@ function load_local_national_results(userZIP, aggregateResults, covidData, setCo
   if (covidResults.length) {
     covidResults.map((question, qIndex) => {
       const answerZIP = question[question.length - 1]
-      if (answerZIP === userZIP) {
+      if (answerZIP.substring(0, LOCAL_DISTANCE) === userZIP.substring(0, LOCAL_DISTANCE)) {
         localTotal++
       }
 
@@ -147,7 +148,7 @@ function load_local_national_results(userZIP, aggregateResults, covidData, setCo
           if (answer in covidTotals) {
             covidTotals[answer] += 1
 
-            if (answerZIP === userZIP) {
+          if (answerZIP.substring(0, LOCAL_DISTANCE) === userZIP.substring(0, LOCAL_DISTANCE)) {
               localCovidTotals[answer] += 1
             }
           }
@@ -176,7 +177,7 @@ function load_local_national_results(userZIP, aggregateResults, covidData, setCo
   if (moodResults.length) {
     moodResults.map((question, qIndex) => {
       const answerZIP = question[question.length - 1]
-      if (answerZIP === userZIP) {
+      if (answerZIP.substring(0, LOCAL_DISTANCE) === userZIP.substring(0, LOCAL_DISTANCE)) {
         localTotal++
       }
 
@@ -186,7 +187,7 @@ function load_local_national_results(userZIP, aggregateResults, covidData, setCo
           if (answer in moodTotals) {
             moodTotals[answer] += 1
 
-            if (answerZIP === userZIP) {
+          if (answerZIP.substring(0, LOCAL_DISTANCE) === userZIP.substring(0, LOCAL_DISTANCE)) {
               localMoodTotals[answer] += 1
             }
           }

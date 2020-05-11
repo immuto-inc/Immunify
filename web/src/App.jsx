@@ -3,7 +3,6 @@ import {
     BrowserRouter as Router,
     Route,
     Switch,
-    useHistory
 } from "react-router-dom";
 
 import Homepage from "./pages/homepage"
@@ -84,10 +83,6 @@ function App() {
     "COVID": [],
     "MOOD": []
   })
-
-  const dashboardRoutes = [
-    ''
-  ]
 
   useEffect(() => { 
     if (!authToken || userInfo) return;

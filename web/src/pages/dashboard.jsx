@@ -7,7 +7,7 @@ import { useHistory } from "react-router-dom"
 import PageTitle from "../components/page_title"
 import SurveyForm, { NewSurveysView } from "../components/survey_views"
 import ChartView from "../components/chart_views"
-import ZIPMap from "../components/map_views"
+// import ZIPMap from "../components/map_views"
 
 import { API_URL, IMMUTO_URL, check_logged_in } from "../utils";
 import immuto from "../immuto"
@@ -16,7 +16,7 @@ export const im = immuto.init(true, IMMUTO_URL);
 const oboardingQuestions = [
   {
     questionText: "Select your age range",
-    answers: ["18 or younger", "18-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75 or older"],
+    answers: ["17 or younger", "18-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75 or older"],
     type: "radio"
   },
   {
@@ -83,7 +83,7 @@ const Dashboard = (
       window.localStorage.authToken = ""
       history.push('/login')
     })
-  }, [authToken])
+  }, [authToken, history])
 
   if (!userInfo) {
     return (

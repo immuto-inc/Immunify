@@ -7,7 +7,7 @@ import { useHistory, useParams } from "react-router-dom"
 import PageTitle from "../components/page_title"
 import SurveyForm, { NewSurveysView } from "../components/survey_views"
 
-import { API_URL, IMMUTO_URL, today_as_string, get_survey_info } from "../utils";
+import { API_URL, IMMUTO_URL, today_as_string, get_survey_info, check_logged_in } from "../utils";
 import immuto from "../immuto"
 export const im = immuto.init(true, IMMUTO_URL);
 
@@ -50,8 +50,15 @@ const Surveys =
     .catch(err => console.error(err))
   }, [userInfo, surveyID, authToken]);
 
-  authToken = authToken || window.localStorage.authToken
-  if (!authToken) {history.push('/login');}
+  useEffect(() => {
+    check_logged_in(authToken)
+    .then(result => {console.log("Authenticated")})
+    .catch(err => {
+      console.error(err)
+      window.localStorage.authToken = ""
+      history.push('/login')
+    })
+  }, [authToken, history])
 
   if (!userInfo) {
     return (
@@ -127,6 +134,15 @@ const Surveys =
     );
   }
 
+  if (!profileInfo) {
+    return (
+      <Container fluid> 
+        <PageTitle pageName="Surveys" score={userInfo.score}/> 
+        <span>Loading survey content ...</span>
+      </Container>
+    );
+  }
+
   return (
       <Container fluid> 
         <PageTitle pageName="Surveys" score={userInfo.score}/> 
@@ -146,7 +162,7 @@ const Surveys =
                       .then(recordID => {
                         im.upload_file_for_record({name: identifier, type: "text/plain"}, responseString, recordID, userPassword)
                         .then(done => {
-                          store_survey_results_for_user(recordID, identifier, responseString, profileInfo[2] || "NA")
+                          store_survey_results_for_user(recordID, identifier, responseString, profileInfo ? profileInfo[2] : "NA")
                           .then(success => {
                             userInfo.score += survey.pointValue
                             userInfo[identifier] = today_as_string()
