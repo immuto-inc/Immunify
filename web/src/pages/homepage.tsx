@@ -1,7 +1,6 @@
 import React from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import Button from '@material-ui/core/Button';
-import NavbarIcon from '@material-ui/icons/GroupWorkOutlined';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
@@ -13,13 +12,12 @@ import Container from '@material-ui/core/Container';
 import Link from '@material-ui/core/Link';
 import IconButton from '@material-ui/core/IconButton';
 import Grow from '@material-ui/core/Grow';
-import { palette } from '@material-ui/system';
 
 import dashboard from '../images/dashboard.png';
 import symptoms from '../images/symptoms.png';
 import survey from '../images/survey.png';
 import community from '../images/community_results.png';
-import logo from '../images/logo_bw.png';
+// import logo from '../images/logo_bw.png';
 import icon from '../images/logo_bw_dots.png';
 
 import Footer from '../components/footer';
@@ -88,7 +86,7 @@ const Homepage = () => {
       <AppBar position="static">
         <Toolbar className={classes.toolBar} style={{color: "white"}}>
           <IconButton edge="start" className={classes.menuButton} href="/" style={{color: "white"}} aria-label="refresh">
-            <img src={icon} height="25"/>
+            <img alt="Immunify Icon" src={icon} height="25"/>
           </IconButton>
           <Typography variant="h6" className={classes.title}>
             <Link  href="/" style={{textDecoration: 'none', color: "white"}}> Immunify </Link>

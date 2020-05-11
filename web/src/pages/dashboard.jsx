@@ -7,7 +7,7 @@ import { useHistory } from "react-router-dom"
 import PageTitle from "../components/page_title"
 import SurveyForm, { NewSurveysView } from "../components/survey_views"
 import ChartView from "../components/chart_views"
-import ZIPMap from "../components/map_views"
+// import ZIPMap from "../components/map_views"
 
 import { API_URL, IMMUTO_URL, check_logged_in } from "../utils";
 import immuto from "../immuto"
