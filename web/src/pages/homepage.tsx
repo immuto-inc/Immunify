@@ -124,7 +124,7 @@ const Homepage = () => {
           {/* End hero unit */}
           <Grid container spacing={2}>
             {cards.map((card, idx) => (
-              <Grid item key={idx} xs={4} sm={4} md={4}>
+              <Grid item key={idx} xs={12} sm={4} md={4}>
                 <Grow in={true} timeout={(idx + 1) * 1000}>
                   <Card className={classes.card}>
                     <CardMedia
@@ -146,11 +146,11 @@ const Homepage = () => {
           {/* End hero unit */}
           <Grid container>
               <Grid item  xs={12} sm={12} md={12}>
-                <Grow in={true} timeout={3000}>
+                <Grow in={true} timeout={4000}>
                   <Card className={classes.card}>
                   <CardContent className={classes.cardContent}>
                       <Typography gutterBottom variant="h5" component="h2" align='center'>
-                        {"View community-level and national results from anonymized user data"}
+                        {"View Community-Level and National Results from Anonymized User Data"}
                       </Typography>
                     </CardContent>
                     <CardMedia
