@@ -33,7 +33,7 @@ exports.build_validator = (escapeFunction, options) => {
     if (!escapeFunction) {throw "escapeFunction must be provided"}
     if (options === undefined) { options = {} }
 
-    let {maxLength, shouldTruncate, isOptional, isObject} = options
+    let {maxLength, shouldTruncate, isOptional, isObject, isNumber} = options
 
     if (maxLength) { 
         maxLength = parseInt(maxLength)
@@ -48,8 +48,7 @@ exports.build_validator = (escapeFunction, options) => {
 
         let escapedValue = escapeFunction(fieldValue) // may throw exception, this is fine
 
-
-        if (!isObject) { // is string
+        if (!isObject && !isNumber) { // is string
             if (escapedValue.length > maxLength) {
                 if (shouldTruncate) {
                     escapedValue = escapedValue.substring(0, maxLength)
@@ -61,11 +60,13 @@ exports.build_validator = (escapeFunction, options) => {
             if (!isOptional && escapedValue.length === 0) {
                 throw `Value has 0 length after escaping but field is required`
             }
-        } else { // is parsed JSON
+        } else if (isObject) { // is parsed JSON
             let parsed = JSON.stringify(escapedValue)
             if (parsed.length > maxLength) {
                 throw `Length of JSON ${parsed} exceeds maxLength ${maxLength}`
             }
+        } else { // isNumber
+            // nothing to do
         }
 
         return escapedValue
@@ -83,6 +84,63 @@ exports.VALIDATE_EMAIL = exports.build_validator(
     {
         maxLength: 75,
         shouldTruncate: false,
+        isOptional: false
+    })
+exports.VALIDATE_RECORD_ID = exports.build_validator(
+    (recordID) => {
+        if (!exports.is_valid_address(recordID)) {
+            throw new Error("Invalid recordID")
+        }
+
+        return recordID 
+    }, 
+    {
+        maxLength: 100,
+        isOptional: false
+    })
+const DEFAULT_SURVEY_IDENTIFIERS = ["COVID", "MOOD"]
+exports.VALIDATE_SURVEY_ID = exports.build_validator(
+    (surveyID) => {
+        if (DEFAULT_SURVEY_IDENTIFIERS.includes(surveyID)) return surveyID
+
+        if (!validator.isMongoId(surveyID)) {
+            throw new Error("Invalid survey identifier")
+        }
+
+        return surveyID 
+    }, 
+    {
+        maxLength: 100,
+        isOptional: false
+    })
+exports.VALIDATE_JSON_10000 = exports.build_validator(
+    (surveyResponse) => {
+        try {
+            let response = JSON.parse(surveyResponse)
+        } catch(err) {
+            throw new Error("Invalid survey response format")
+        }
+
+        return surveyResponse
+    }, 
+    {
+        maxLength: 10000,
+        isOptional: false
+    })
+exports.VALIDATE_ZIP_OR_NA = exports.build_validator(
+    (userZIP) => {
+        if (userZIP.toLowerCase() === "na") return "NA"
+
+        let parsedZIP = userZIP.substring(0,5).replace(/[^0-9]/g, "")
+
+        if (parsedZIP !== userZIP) {
+            throw new Error("Invalid ZIP code")
+        }
+
+        return parsedZIP
+    }, 
+    {
+        maxLength: 5,
         isOptional: false
     })
 
@@ -104,6 +162,14 @@ exports.is_valid_authToken = (authToken) => {
     return validator.isHexadecimal(authToken)
 }  
 
+exports.is_valid_address = (address) => {
+    if (!address) return false;
+
+    return (
+        validator.isHexadecimal(address) &&
+        (address.length == 42 || address.length == 40)
+    )
+}
 
 
 

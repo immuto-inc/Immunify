@@ -35,11 +35,7 @@ app.get('/', (req, res) => res.status(200).end("API Online!"));
 
 
 /********************************* MIDDLEWARE *********************************/
-const ROUTE_VALIDATION = { // may be worth changing from const to let, vvvvv
-    '/register-org-user': { // may be worth adding individually before each route
-        'email': valid.VALIDATE_EMAIL
-    }
-}
+let ROUTE_VALIDATION = {}
 function validateInput(req, res, next) {
     const path = req.path
     let validators = ROUTE_VALIDATION[path]
@@ -78,8 +74,9 @@ function validateInput(req, res, next) {
     try {
         validatedParams = valid.run_validation(params, validators)
     } catch(err) {
-        res.status(400).end(err)
-        return
+      console.error("Error in validation: " + err)
+      res.status(400).end(err)
+      return
     }
 
     req.query = {} // prevent access to raw user input
@@ -89,7 +86,7 @@ function validateInput(req, res, next) {
 }
 
 function requireAuth(req, res, next) {
-  const authToken = auth.get_auth_token()
+  const authToken = auth.get_auth_token(req)
   if (!valid.is_valid_authToken(authToken)) {
     res.status(401).end("Invalid authentication token")
     return
@@ -98,10 +95,18 @@ function requireAuth(req, res, next) {
   auth.user_logged_in(req)
   .then(userInfo => {
     if (!userInfo) {
+      console.log("Error in require auth")
       res.status(400).end("No user info exists");
       return;
     }
-    
+    if (req.body.authToken) { // to prevent hangups in validation
+      delete req.body.authToken
+    }
+    if (req.query.authToken) { // to prevent hangups in validation
+        delete req.query.authToken
+    }
+
+    req.session = userInfo
     next()
   }).catch((err) => {
       console.error(err)
@@ -110,10 +115,144 @@ function requireAuth(req, res, next) {
 }
 
 app.use(cors({
-  origin: ["http://localhost:3000", "https://immunify.herokuapp.com", "https://immunify.us"]
+  origin: ["http://localhost:3000", "http://localhost:8002", "http://immunify.herokuapp.com", "https://immunify.herokuapp.com", "https://immunify.us"]
 }))
 
+function requireHTTPS(req, res, next) {
+  // The 'x-forwarded-proto' check is for Heroku
+  if (!req.secure && req.get('x-forwarded-proto') !== 'https' && !process.env.TEST) {
+    return res.redirect('https://' + req.get('host') + req.url);
+  }
+  next();
+}
+if (process.env.MODE === "PROD") {
+  app.use(requireHTTPS);
+}
+
+function today_as_string() {
+  let today = new Date();
+  let dd = String(today.getUTCDate()).padStart(2, '0');
+  let mm = String(today.getUTCMonth() + 1).padStart(2, '0'); //January is 0!
+  let yyyy = today.getUTCFullYear();
+  return `${dd}-${mm}-${yyyy}`
+}
+
 /************************************ API *************************************/
+app.get('/user-info', requireAuth, (req, res) => {
+  DB.get_user_info(req.session.email)
+  .then(userInfo => res.json(userInfo))
+  .catch(err => {
+    console.error(err)
+    res.status(500).end("Failed to get user information")
+  })
+})
+
+app.get('/am-i-authenticated', requireAuth, (req, res) => {
+  res.status(204).end()
+})
+
+ROUTE_VALIDATION['/survey-info'] = { // may be worth adding individually before each route
+  'surveyID': valid.VALIDATE_SURVEY_ID,
+}
+app.get('/survey-info', requireAuth, validateInput, (req, res) => {
+  DB.get_survey_info(req.validated.surveyID)
+  .then(surveyInfo => res.json(surveyInfo))
+  .catch(err => {
+    console.error(err)
+    res.status(500).end()
+  })
+})
+
+ROUTE_VALIDATION['/set-profile-info'] = { // may be worth adding individually before each route
+  'recordID': valid.VALIDATE_RECORD_ID
+}
+app.post('/set-profile-info', requireAuth, validateInput, (req, res) => {
+  DB.set_profile_info(req.session.email, req.validated.recordID)
+  .then(result => res.status(204).end())
+  .catch(err => {
+    console.error(err)
+    res.status(500).end("Failed to set user profile information")
+  })
+})
+
+ROUTE_VALIDATION['/record-survey-response'] = { // may be worth adding individually before each route
+  'recordID': valid.VALIDATE_RECORD_ID,
+  'surveyID': valid.VALIDATE_SURVEY_ID,
+  'surveyResponse': valid.VALIDATE_JSON_10000,
+  'userZIP': valid.VALIDATE_ZIP_OR_NA
+}
+app.post('/record-survey-response', requireAuth, validateInput, async (req, res) => { 
+  let { recordID, surveyID, surveyResponse, userZIP } = req.validated
+  surveyResponse = JSON.parse(surveyResponse)
+  const today = today_as_string()
+
+  try {
+    const userInfo = await DB.get_user_info(req.session.email)
+    const surveyInfo = await DB.get_survey_info(surveyID)
+    
+    const lastUpdate = userInfo[surveyID]
+    if (lastUpdate === today) {
+      res.status(400).end("A survey response was already recorded for today");
+      return;
+    }
+
+    surveyResponse.pop() // remove date, to be added back later
+    if (surveyResponse.length !== surveyInfo.questions.length) {
+        res.status(400).end("All questions must be answered");
+        return;
+    }
+    surveyResponse.map((responses, rIndex) => {
+      const validAnswers = surveyInfo.questions[rIndex].answers
+      if (responses.length === 0) {
+          res.status(400).end(`No response provided for question ${rIndex + 1}`)
+          return
+      }
+
+      for (let response of responses) {
+        if (!validAnswers.includes(response)) {
+          res.status(400).end(`Invalid response for question ${rIndex + 1}: ${response}`)
+          return
+        }
+      }
+    })
+    surveyResponse.push(today_as_string())
+
+    surveyResponse.push(userZIP)
+    let update = await DB.add_response_for_survey(surveyID, surveyResponse)
+    let userUpdate = await DB.update_user_response(
+      req.session.email, 
+      surveyID, 
+      today, 
+      surveyInfo.pointValue,
+      recordID
+    )
+
+    res.status(204).end()
+  } catch(err) {
+    console.error(err)
+    res.status(500).end()
+  }
+})
+
+ROUTE_VALIDATION['/survey-responses'] = { // may be worth adding individually before each route
+  'surveyID': valid.VALIDATE_SURVEY_ID,
+}
+app.get('/survey-responses', requireAuth, validateInput, (req, res) => {
+  DB.get_survey_responses(req.validated.surveyID)
+  .then(surveyResponses => res.json(surveyResponses))
+  .catch(err => {
+    console.error(err)
+    res.status(500).end()
+  })
+})
+
+
+
+// Registration and auth
+
+ROUTE_VALIDATION['/register-org-user'] = { // may be worth adding individually before each route
+  'email': valid.VALIDATE_EMAIL
+}
 app.post("/register-org-user", validateInput, (req, res) => {
   let email = req.validated.email;
 
@@ -182,7 +321,6 @@ app.post("/login-user", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-    console.log("logout post")
     auth
       .end_user_session(req)
       .then(() => {
@@ -305,14 +443,14 @@ function user_logged_in_immuto(authToken) {
     http.open("POST", IMMUTO_HOST + "/verify-user-authentication", true);
     http.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     http.onreadystatechange = () => {
-      if (http.readyState == 4 && http.status == 200) {
+      if (http.readyState === 4 && http.status === 200) {
         try {
           let userInfo = JSON.parse(http.responseText);
           resolve(userInfo);
         } catch (err) {
           reject(err);
         }
-      } else if (http.readyState == 4) {
+      } else if (http.readyState === 4) {
         let response = {
           responseText: http.responseText,
           code: http.status

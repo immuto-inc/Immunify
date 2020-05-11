@@ -12,6 +12,17 @@ const DEFAULT_PORT = 8002;
 /******************************* Website Pages ********************************/
 //app.get('/', (req, res, done) => res.status(201).json({ message: "Hello World!" }));
 
+function requireHTTPS(req, res, next) {
+  // The 'x-forwarded-proto' check is for Heroku
+  if (!req.secure && req.get('x-forwarded-proto') !== 'https' && !process.env.TEST) {
+    return res.redirect('https://' + req.get('host') + req.url);
+  }
+  next();
+}
+if (process.env.MODE === "PROD") {
+  app.use(requireHTTPS);
+}
+
 if (cluster.isMaster) {
     // Count the machine's CPUs
     var cpuCount = process.env.WEB_CONCURRENCY || require('os').cpus().length || 1;
@@ -31,7 +42,7 @@ if (cluster.isMaster) {
       })
 
       // Serve react app
-      app.get('*', (req, res) => res.sendFile(path.resolve(__dirname, 'build', 'service-worker.js')));
+      app.get('*', (req, res) => res.sendFile(path.resolve(__dirname, 'build', 'index.html')));
   }
 
   // Listen for dying workers

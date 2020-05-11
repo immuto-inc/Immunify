@@ -53,9 +53,7 @@ exports.user_logged_in = (req) => {
             resolve(false)
             return
         }
-        console.log(authToken)
         DB.get_user_session(authToken).then((sessionInfo) => {
-            console.log(sessionInfo)
             if (sessionInfo) {
                 resolve(sessionInfo)
             } else {

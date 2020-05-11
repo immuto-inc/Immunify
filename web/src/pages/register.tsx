@@ -10,8 +10,9 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import Copyright from './copyright'
 import { useHistory } from "react-router-dom"
+
+import Copyright from '../components/copyright'
 
 import { API_URL, IMMUTO_URL } from "../utils";
 
@@ -46,6 +47,7 @@ const Register = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [passwordConfirmation, setPasswordConfirmation] = useState("")
+  const [processingRegistration, setProcessingRegistration] = useState(false)
 
   const handleEmailChange = (e : React.ChangeEvent<HTMLInputElement>) => {
      setEmail(e.target.value);
@@ -58,16 +60,27 @@ const Register = () => {
   }
 
   function handleForm(e : React.FormEvent<HTMLFormElement>) {
+      setProcessingRegistration(true)
+
       if (im.authToken) {
           im.deauthenticate()
       }
 
       e.preventDefault()
 
-      register_user(email, password).then((result) => {
+      if (password !== passwordConfirmation) {
+        alert("Passwords must match"); return;
+      }
+
+      register_user(email, password)
+      .then((result) => {
         history.push('/login')          
-      }).catch((err) => {
+      })
+      .catch((err) => {
           alert(`Error on registration: ${err}`)
+      })
+      .finally(() => {
+        setProcessingRegistration(false)
       })
   }
 
@@ -128,6 +141,7 @@ const Register = () => {
             fullWidth
             variant="contained"
             color="primary"
+            disabled={processingRegistration}
             className={classes.submit}
           >
             Sign Up

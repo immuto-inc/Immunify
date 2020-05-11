@@ -15,7 +15,7 @@ import Link from '@material-ui/core/Link';
 import IconButton from '@material-ui/core/IconButton';
 
 
-import Footer from "./footer"
+import Footer from "../components/footer"
 
 const useStyles = makeStyles((theme) => ({
   menuButton: {

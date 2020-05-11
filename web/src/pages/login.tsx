@@ -3,8 +3,8 @@ import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
+// import FormControlLabel from '@material-ui/core/FormControlLabel';
+// import Checkbox from '@material-ui/core/Checkbox';
 import Link from '@material-ui/core/Link';
 import Grid from '@material-ui/core/Grid';
 import Box from '@material-ui/core/Box';
@@ -12,8 +12,9 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import Copyright from './copyright';
 import { useHistory } from "react-router-dom"
+
+import Copyright from '../components/copyright';
 
 import { API_URL, IMMUTO_URL } from "../utils";
 
@@ -47,6 +48,8 @@ const Login = ({setAuthToken} : {setAuthToken : Dispatch<SetStateAction<string>>
   const history = useHistory();
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [processingLogin, setProcessingLogin] = useState(false)
+
 
   const handleEmailChange = (e : React.ChangeEvent<HTMLInputElement>) => {
      setEmail(e.target.value);
@@ -56,6 +59,8 @@ const Login = ({setAuthToken} : {setAuthToken : Dispatch<SetStateAction<string>>
   }
 
   function handleForm(e : React.FormEvent<HTMLFormElement>) {
+    setProcessingLogin(true)
+
     e.preventDefault()
 
     if (im.authToken) {
@@ -63,15 +68,21 @@ const Login = ({setAuthToken} : {setAuthToken : Dispatch<SetStateAction<string>>
     }
 
     im.authenticate(email, password).then((authToken : string) => {
+      window.localStorage.password=password
         create_user_session(authToken).then(() => {
+          window.localStorage.authToken=authToken
           setAuthToken(authToken)
           history.push('/dashboard')          
         }).catch((err : string) => {
           console.log(err)
           alert("Error logging in: " + err)
         })
+        .finally(() => {
+          setProcessingLogin(false)
+        })
     }).catch((err : string) => {
-        alert("Unable to login: \n" + err)
+      setProcessingLogin(false)  
+      alert("Unable to login: \n" + err)
     })
   }
 
@@ -119,6 +130,7 @@ const Login = ({setAuthToken} : {setAuthToken : Dispatch<SetStateAction<string>>
             fullWidth
             variant="contained"
             color="primary"
+            disabled={processingLogin}
             className={classes.submit}
           >
             Sign In
@@ -151,9 +163,9 @@ function create_user_session(authToken : string) {
         http.open("POST", API_URL + "/login-user", true)
         http.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
         http.onreadystatechange = () => {
-            if (http.readyState == 4 && http.status == 204) {
+            if (http.readyState === 4 && http.status === 204) {
                 resolve()
-            } else if (http.readyState == 4) {
+            } else if (http.readyState === 4) {
                 reject(http.responseText)
             }
         }
