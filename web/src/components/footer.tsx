@@ -7,7 +7,7 @@ import Copyright from "./copyright"
 
 const useStyles = makeStyles((theme) => ({
   footer: {
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: '#f8f9fc',
     padding: theme.spacing(6),
   },
 }));
