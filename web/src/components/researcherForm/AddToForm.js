@@ -2,6 +2,14 @@ import axios from 'axios'
 import React, { Component } from 'react'
 import MultipleChoice from './MultipleChoice'
 
+import {
+    Button,
+    Form,
+    Row,
+    Col
+} from "react-bootstrap"
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 export default class AddToForm extends Component {
     state = {
         inputType: "text",
@@ -16,13 +24,8 @@ export default class AddToForm extends Component {
             <React.Fragment>
                 <br /><br /><br />
                 <label htmlFor="question" >Sample of Form: </label>
-                <br />
-                --------------------<br />
                 {this.state.question}
-                <br />
-                <input type={this.state.inputType} name="question" id="question" ></input>
-                <br />
-                --------------------
+                <Form.Control type={this.state.inputType} name="question" id="question" ></Form.Control>
             </React.Fragment>
         )
     }
@@ -31,10 +34,12 @@ export default class AddToForm extends Component {
     // or multiple choice
     renderInputTypeButton = () => {
         return (
-            <React.Fragment>
-                <button onClick={this.showText} >Text</button>
-                <button onClick={this.showNumber}>Number</button>
-                <button onClick={this.showMultipleChoice}>Multiple Choice</button>
+            <React.Fragment className="text-center mt-4">
+            <Row>
+                <Button className="btn btn-primary ml-auto mr-2 w-25" onClick={this.showText} >Text</Button>
+                <Button className="btn btn-secondary mr-2 w-25" onClick={this.showNumber}>Number</Button>
+                <Button className="btn btn-info w-25 mr-auto" onClick={this.showMultipleChoice}>Multiple Choice</Button>
+            </Row>
             </React.Fragment>
         )
     }
@@ -76,21 +81,19 @@ export default class AddToForm extends Component {
         if (this.state.showMultipleChoice) {
             // This renders if the researcher is working on a multiple choice question
             return (
-                <div>
+                <div className="px-4">
                     {this.renderInputTypeButton()}
-                    <br />
                     <MultipleChoice formId={this.props.formId} fetchQuestionList={this.props.fetchQuestionList} />
                 </div>
             )
         } else {
             // This renders if the researcher is working on a text/ numeric question
             return (
-                <div>
+                <div className="px-4">
                     {this.renderInputTypeButton()}
-                    <br />
-
-                    <label htmlFor="question" >Question: </label>
-                    <input
+                    
+                    <Form.Label htmlFor="question" className="mt-2">Question: </Form.Label>
+                    <Form.Control
                         value={this.state.question}
                         onChange={(event) => this.setState({ question: event.target.value })}
                         type="text"
@@ -101,8 +104,7 @@ export default class AddToForm extends Component {
 
                     {this.renderSampleInput()}
 
-                    <br /><br />
-                    <button onClick={this.addToForm} >Add to Form</button>
+                    <Button className="btn-success mt-2" onClick={this.addToForm} >Add to Form</Button>
                 </div>
             )
         }

@@ -1,5 +1,13 @@
 import React, { Component } from 'react'
 
+import {
+    Button,
+    Form,
+    Row,
+    Col
+} from "react-bootstrap"
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 export default class PreviewForm extends Component {
 
 
@@ -10,7 +18,6 @@ export default class PreviewForm extends Component {
                 <div key={index}>
                     <input type="radio" id={index} name={question.question} value={choice} />
                     <label htmlFor={choice}>{choice}</label>
-                    <br />
                 </div>
             )
         })
@@ -27,22 +34,16 @@ export default class PreviewForm extends Component {
             if (question.inputType == "Multiple Choice") {
                 return (
                     <div key={index}>
-                        ------------
-                        <br />
-                        <label>{question.question.question}</label>
+                        <Form.Label>{question.question.question}</Form.Label>
                         {this.renderChoices(question.question)}
-                        <br /><br />
                     </div>
                 )
             } else {
                 // Renders text / number questions 
                 return (
                     <div key={index}>
-                        ------------
-                        <br />
-                        <label>{question.question}</label>
-                        <input type={question.inputType} />
-                        <br /><br />
+                        <Form.Label>{question.question}</Form.Label>
+                        <Form.Control type={question.inputType} />
                     </div>
                 )
             }
@@ -51,10 +52,8 @@ export default class PreviewForm extends Component {
 
     render() {
         return (
-            <div>
-                Preview
-                <br />
-                <br />
+            <div className="px-4">
+                <h2 className="mt-5 text-center">Survey Preview</h2>
                 <h3>Title: {this.props.dbInfo.title}</h3>
                 <h4>Institution: {this.props.dbInfo.institution}</h4>
                 <h4>Estimated Time: {this.props.dbInfo.estimatedTime} minutes</h4>

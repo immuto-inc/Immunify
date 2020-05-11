@@ -3,6 +3,14 @@ import React, { Component } from 'react'
 import AddToForm from "./AddToForm"
 import PreviewForm from "./PreviewForm"
 
+import {
+    Button,
+    Form,
+    Row,
+    Col
+} from "react-bootstrap"
+
+import 'bootstrap/dist/css/bootstrap.min.css';
 var dbInfo = {}
 let formId
 
@@ -38,10 +46,8 @@ export default class ResearcherForm extends Component {
     render() {
         return (
             <div>
-                Create a Form!
-                <br />-------<br />
+                <h1 className="text-center mt-2">Create Survey</h1>
                 <AddToForm fetchQuestionList={this.fetchQuestionList} dbInfo={dbInfo} formId={this.props.match.params.formId} />
-                <br />-------<br />
                 <PreviewForm questions={this.state.questionList} dbInfo={dbInfo} formId={this.props.match.params.formId} />
             </div>
         )

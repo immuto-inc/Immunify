@@ -1,5 +1,12 @@
 import axios from 'axios'
 import React, { Component } from 'react'
+import {
+    Button,
+    Form,
+    Row,
+    Col
+} from "react-bootstrap"
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 export default class MultipleChoice extends Component {
     state = {
@@ -78,8 +85,8 @@ export default class MultipleChoice extends Component {
     render() {
         return (
             <div>
-                <label htmlFor="question" >Question: </label>
-                <input
+                <Form.Label htmlFor="question" className="mt-2">Question: </Form.Label>
+                <Form.Control
                     value={this.state.question}
                     onChange={(event) => this.setState({ question: event.target.value })}
                     type="text"
@@ -89,18 +96,14 @@ export default class MultipleChoice extends Component {
                 />
 
                 <br />
-                <button onClick={this.addNewChoice}>Add a Choice</button>
+                <Button className="btn btn-dark mb-3" onClick={this.addNewChoice}>Add a Choice</Button>
                 {this.renderChoices()}
 
-                <br /><br /><br />
-                <label htmlFor="question" >Sample of Form: </label>
-                <br />--------------------<br />
+                <Form.Label htmlFor="question" className="mt-2" >Sample of Form: </Form.Label>
                 {this.state.question}
-                <br />
                 {this.sampleOfChoices()}
 
-                <br /><br />
-                <button onClick={this.addToForm}>Submit</button>
+                <Button className="btn btn-light" onClick={this.addToForm}>Submit</Button>
 
             </div>
         )

@@ -1,6 +1,14 @@
-import axios from 'axios'
-import React, { Component } from 'react'
-import { Redirect } from 'react-router-dom'
+import axios from 'axios';
+import React, { Component } from 'react';
+import { Redirect } from 'react-router-dom';
+import {
+    Button,
+    Form,
+    Row,
+    Col
+} from "react-bootstrap"
+
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 export default class ResearcherFormNew extends Component {
     state = {
@@ -42,8 +50,12 @@ export default class ResearcherFormNew extends Component {
 
         return (
             <div>
-                <form>
-                    <input
+                <h1 className="text-center mt-3">Create New Survey</h1>
+                <Row>
+                <Col>
+                <Form className=" w-50 mx-auto">
+                    <Form.Control
+                        className="my-2"
                         type="text"
                         name="title"
                         id="title"
@@ -51,7 +63,8 @@ export default class ResearcherFormNew extends Component {
                         value={this.state.title}
                         onChange={(event) => this.setState({ title: event.target.value })}
                     />
-                    <input
+                    <Form.Control
+                        className="my-2"
                         type="text"
                         name="institution"
                         id="institution"
@@ -59,7 +72,8 @@ export default class ResearcherFormNew extends Component {
                         value={this.state.institution}
                         onChange={(event) => this.setState({ institution: event.target.value })}
                     />
-                    <input
+                    <Form.Control
+                        className="my-2"
                         type="number"
                         name="et"
                         id="et"
@@ -67,8 +81,10 @@ export default class ResearcherFormNew extends Component {
                         value={this.state.estimatedTime}
                         onChange={(event) => this.setState({ estimatedTime: event.target.value })}
                     />
-                    <button onClick={this.createForm}>Create Form</button>
-                </form>
+                    <Button className="btn btn-primary float-right" onClick={this.createForm}>Create Form</Button>
+                </Form>
+                </Col>
+                </Row>
             </div>
         )
     }
