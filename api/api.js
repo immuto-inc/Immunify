@@ -22,7 +22,7 @@ const DEFAULT_PORT = 8001;
 
 // TODO: Change to www.immuto.io on PROD
 const IMMUTO_HOST = MODE === "PROD" ? "https://dev.immuto.io" : "https://dev.immuto.io";
-g
+
 let app = express();
 let im = immuto.init(true, IMMUTO_HOST); // leave blank for production use
 
