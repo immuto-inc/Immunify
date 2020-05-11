@@ -19,7 +19,9 @@ if (process.env.MODE !== "PROD") {
 const MODE = process.env.MODE === "PROD" ? "PROD" : "DEV"
 
 const DEFAULT_PORT = 8001;
-const IMMUTO_HOST = MODE === "PROD" ? "https://www.immuto.io" : "https://dev.immuto.io";
+
+// TODO: Change to www.immuto.io on PROD
+const IMMUTO_HOST = MODE === "PROD" ? "https://dev.immuto.io" : "https://dev.immuto.io";
 
 let app = express();
 let im = immuto.init(true, IMMUTO_HOST); // leave blank for production use
