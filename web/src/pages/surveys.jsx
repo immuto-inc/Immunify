@@ -94,7 +94,7 @@ const Surveys =
 
         <div class="list-group my-3">
         <ul className="ml-0 pl-0">
-          <li class="list-group-item active">
+          <li className="list-group-item active">
             {surveyID === "MOOD" ? <h6 className="my-0 py-0">Select any options which describe today's mood:</h6> 
                         : ""}
             {surveyID === "COVID" ? <h6 className="my-0 py-0">Select any symptoms you've experienced within the last 24h:</h6> 
@@ -130,15 +130,6 @@ const Surveys =
       <Container fluid> 
         <PageTitle pageName="Surveys" score={userInfo.score}/> 
         <span>Loading survey content...</span>
-      </Container>
-    );
-  }
-
-  if (!profileInfo) {
-    return (
-      <Container fluid> 
-        <PageTitle pageName="Surveys" score={userInfo.score}/> 
-        <span>Loading survey content ...</span>
       </Container>
     );
   }
