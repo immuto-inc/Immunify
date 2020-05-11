@@ -220,18 +220,21 @@ const ChartView = ({profileInfo, surveyResults, aggregateResults}) => {
   const [moodData, setMoodData] = useState(DEFAULT_MOOD_DATA)
 
   useEffect(() => { 
-    if (!profileInfo) return;
-     
-    load_local_national_results(profileInfo[2] /* user ZIP */, aggregateResults, covidData, setCovidData, moodData, setMoodData)
+    load_local_national_results(profileInfo ? profileInfo[2] : "NA", aggregateResults, covidData, setCovidData, moodData, setMoodData)
   }, [aggregateResults, covidData, moodData, profileInfo]);
 
   useEffect(() => { 
     load_personal_results(surveyResults, covidData, setCovidData, moodData, setMoodData)
   }, [surveyResults, covidData, moodData]);
 
+  if (aggregateResults["COVID"].length === 0) { // commented out because of data loading issues on bad decryption of
+    return <div>
+      Loading Immunify data...
+    </div>
+  }
 
-
-  if (!profileInfo) {
+  // twice to force refresh
+  if (aggregateResults["MOOD"].length === 0) { // commented out because of data loading issues on bad decryption of
     return <div>
       Loading Immunify data...
     </div>
