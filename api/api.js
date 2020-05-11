@@ -22,7 +22,7 @@ const DEFAULT_PORT = 8001;
 
 // TODO: Change to www.immuto.io on PROD
 const IMMUTO_HOST = MODE === "PROD" ? "https://dev.immuto.io" : "https://dev.immuto.io";
-
+g
 let app = express();
 let im = immuto.init(true, IMMUTO_HOST); // leave blank for production use
 
@@ -110,7 +110,7 @@ function requireAuth(req, res, next) {
 }
 
 app.use(cors({
-  origin: ["http://localhost:3000", "http://localhost:8002", "http://immunify.herokuapp.com", "https://immunify.herokuapp.com", "https://immunify.us"]
+  origin: ["http://localhost:3000", "http://localhost:8002", "http://immunify.herokuapp.com", "https://immunify.herokuapp.com", "https://www.immunify.us", "https://immunify.us"]
 }))
 
 function requireHTTPS(req, res, next) {
