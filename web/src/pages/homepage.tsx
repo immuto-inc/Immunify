@@ -124,7 +124,7 @@ const Homepage = () => {
           {/* End hero unit */}
           <Grid container spacing={2}>
             {cards.map((card, idx) => (
-              <Grid item key={idx} xs={12} sm={4} md={4}>
+              <Grid item key={idx} xs={12} sm={12} md={4}>
                 <Grow in={true} timeout={(idx + 1) * 1000}>
                   <Card className={classes.card}>
                     <CardMedia
@@ -157,7 +157,6 @@ const Homepage = () => {
                       className={classes.cardMedia}
                       image={community} 
                     />
-                    
                   </Card>
                 </Grow>
               </Grid>
