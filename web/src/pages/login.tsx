@@ -19,7 +19,7 @@ import Copyright from '../components/copyright';
 import { API_URL, IMMUTO_URL } from "../utils";
 
 // @ts-ignore
-import immuto from 'immuto-backend';
+import immuto from '../immuto';
 export const im = immuto.init(true, IMMUTO_URL);
 
 const useStyles = makeStyles((theme) => ({
@@ -69,8 +69,8 @@ const Login = ({setAuthToken} : {setAuthToken : Dispatch<SetStateAction<string>>
 
     im.authenticate(email, password).then((authToken : string) => {
       window.localStorage.password=password
+      window.localStorage.authToken=authToken
         create_user_session(authToken).then(() => {
-          window.localStorage.authToken=authToken
           setAuthToken(authToken)
           history.push('/dashboard')          
         }).catch((err : string) => {

@@ -48,7 +48,6 @@ exports.end_user_session = (req) => {
 exports.user_logged_in = (req) => {
     return new Promise((resolve, reject) => {
         let authToken = exports.get_auth_token(req)
-
         if (!authToken) {
             resolve(false)
             return
@@ -73,7 +72,7 @@ exports.get_auth_token = (req) => {
         return req.body.authToken
     }
 
-    let cookies = (cookie.parse(req.headers.cookie || null));
+    let cookies = (cookie.parse(req.headers.cookie || ''));
     if (cookies && cookies.authToken) {
         return cookies.authToken
     }

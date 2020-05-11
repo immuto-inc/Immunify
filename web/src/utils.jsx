@@ -49,6 +49,23 @@ export function get_survey_info(authToken, surveyID) {
   })
 }
 
+export function check_logged_in(authToken) {
+  authToken = authToken || window.localStorage.authToken
+
+  return new Promise((resolve, reject) => {
+    let url = `${API_URL}/am-i-authenticated?authToken=${authToken}`;
+
+    fetch(url, {})
+    .then((result) => {
+        if (result.ok) resolve(result)
+        else reject(result)
+      },
+      (err) => {
+        reject(err)
+      })
+  })
+}
+
 export function today_as_string() {
   let today = new Date();
   let dd = String(today.getUTCDate()).padStart(2, '0');

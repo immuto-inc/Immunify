@@ -86,16 +86,9 @@ function validateInput(req, res, next) {
 }
 
 function requireAuth(req, res, next) {
-  const authToken = auth.get_auth_token(req)
-  if (!valid.is_valid_authToken(authToken)) {
-    res.status(401).end("Invalid authentication token")
-    return
-  }
-
   auth.user_logged_in(req)
   .then(userInfo => {
     if (!userInfo) {
-      console.log("Error in require auth")
       res.status(400).end("No user info exists");
       return;
     }

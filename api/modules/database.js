@@ -57,7 +57,7 @@ exports.add_session = (authToken, userInfo) => {
 
 exports.delete_session = (authToken) => {
     return new Promise((resolve, reject) => {
-        let query = {authToken: authToken}
+        let query = {authToken}
         DB.collection("cookies").removeOne(query, (err, user) => {
             if (err) {
                 reject(err)
@@ -70,7 +70,7 @@ exports.delete_session = (authToken) => {
 
 exports.get_user_session = (authToken) => {
     return new Promise((resolve, reject) => {
-        let query = {authToken: authToken}
+        let query = {authToken}
         DB.collection("cookies").findOne(query, (err, userInfo) => {
             if (err) {
                 reject(err)

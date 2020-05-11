@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { 
     Container, 
 } from "react-bootstrap";
@@ -9,7 +9,7 @@ import SurveyForm, { NewSurveysView } from "../components/survey_views"
 import ChartView from "../components/chart_views"
 import ZIPMap from "../components/map_views"
 
-import { API_URL, IMMUTO_URL } from "../utils";
+import { API_URL, IMMUTO_URL, check_logged_in } from "../utils";
 import immuto from "../immuto"
 export const im = immuto.init(true, IMMUTO_URL);
 
@@ -74,8 +74,16 @@ const Dashboard = (
     outstandingSurveys, surveyResults}) => {
   let history = useHistory()  
   outstandingSurveys = outstandingSurveys || []
-  authToken = authToken || window.localStorage.authToken
-  if (!authToken) {history.push('/login');}
+
+  useEffect(() => {
+    check_logged_in(authToken)
+    .then(result => {console.log("Authenticated")})
+    .catch(err => {
+      console.error(err)
+      window.localStorage.authToken = ""
+      history.push('/login')
+    })
+  }, [authToken])
 
   if (!userInfo) {
     return (
