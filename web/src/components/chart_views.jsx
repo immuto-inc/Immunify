@@ -52,8 +52,6 @@ const NOISE_BUFF = 0.05
 function load_personal_results(surveyResults, covidData, setCovidData, moodData, setMoodData) {
   if (surveyResults["COVID"].length === 0 && surveyResults["MOOD"].length === 0) return;
 
-  console.log("loading personal results")
-  console.log(surveyResults)
   let covidResults = surveyResults["COVID"]
   let covidTotals = { 
     'Shortness of breath': 0, 

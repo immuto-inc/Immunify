@@ -146,7 +146,7 @@ const Surveys =
                       .then(recordID => {
                         im.upload_file_for_record({name: identifier, type: "text/plain"}, responseString, recordID, userPassword)
                         .then(done => {
-                          store_survey_results_for_user(recordID, identifier, responseString, profileInfo[2])
+                          store_survey_results_for_user(recordID, identifier, responseString, profileInfo[2] || "NA")
                           .then(success => {
                             userInfo.score += survey.pointValue
                             userInfo[identifier] = today_as_string()
