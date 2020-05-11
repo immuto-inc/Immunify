@@ -48,6 +48,7 @@ const useStyles = makeStyles((theme) => ({
     paddingBottom: theme.spacing(1)
   },
   card: {
+    height: '100%',
     backgroundColor: '#f8f9fc',
     display: 'flex',
     flexDirection: 'column',
@@ -69,11 +70,11 @@ const cards = [
     image: dashboard
   },
   {
-    text: 'Log and Track your Physical and Mental Health ',
+    text: 'Log and Track your Physical and Mental Health',
     image: symptoms
   },
   {
-    text: 'Maintain Full Control of your Personal Data ',
+    text: 'Maintain Full Control of your Personal Data',
     image: survey
   }
 ];
