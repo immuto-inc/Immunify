@@ -430,6 +430,10 @@ const init = function(debug, debugHost) {
     }
 
     this.encrypt_string_with_key = function(plaintext, key) {
+        if (typeof plaintext === "string") {
+            plaintext = this.str2ab(plaintext)
+        }
+
         const iv = crypto.randomBytes(16)
         const cipher = crypto.createCipheriv(SYMMETRIC_SCHEME, key, iv)
         let ciphertext = cipher.update(plaintext, 'binary', 'binary');
