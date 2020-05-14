@@ -174,11 +174,14 @@ const Surveys =
                           console.error(err)
                           alert("Failed to upload encrypted response")
                         })
+
                       })  
                       .catch(err => {
                         console.error(err)
                         alert("Failed blockchain transaction while submitting survey: " + err)
-                      })}
+                      })
+                      return true
+                      }
                     }
                     />            
       </Container>

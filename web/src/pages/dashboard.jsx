@@ -102,7 +102,7 @@ const Dashboard = (
                     pointValue="100"
                     handleSubmit={responses => {
                       let responseString = JSON.stringify(responses)
-                      if (responses[2] && responses[2].toLowerCase() != "na" && responses[2].length != 5) {
+                      if (responses[2] && responses[2].toLowerCase() !== "na" && responses[2].length !== 5) {
                         alert("Please enter a valid 5-digit ZIP code")
                         return false
                       }
