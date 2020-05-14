@@ -547,7 +547,7 @@ const init = function(debug, debugHost) {
             fd.append('fileName', file.name)
             fd.append('fileType', file.type)
             fd.append('recordID', recordID)
-            fd.append('encryptedKey', encryptedKey.ciphertext)
+            fd.append('encryptedKey', encodeURI(encryptedKey.ciphertext))
             fd.append('iv', this.iv_to_string(encryptedKey.iv))
             if (projectID) fd.append('projectID', projectID)
             fd.append('authToken', this.authToken)
@@ -603,15 +603,11 @@ const init = function(debug, debugHost) {
             .then(fileInfo => {
                 let decryptKey = this.generate_key_from_password(password)  
                 let fileURL = fileInfo.remoteURL
-                let encryptedKey = fileInfo.encryptedKey 
+                let encryptedKey = decodeURI(fileInfo.encryptedKey)
                 let iv = this.string_to_iv(fileInfo.iv)
 
-                let fileDecryptInfo = ""
-                try {
-                    fileDecryptInfo = JSON.parse(this.decrypt_string(encryptedKey, decryptKey, iv))  
-                } catch(err) {
-                    fileDecryptInfo = JSON.parse(this.decrypt_string(encryptedKey, decryptKey, iv)) .replace(/\n/g, '') // SAFARI AND FIREFOX ADD EXTRA NEW LINES ON POST FROM THE UPLOAD
-                }
+                let fileDecryptInfo = JSON.parse(this.decrypt_string(encryptedKey, decryptKey, iv))
+                
                 let fileDKey = fileDecryptInfo.key.data
                 let fileDiv = this.string_to_iv(fileDecryptInfo.iv)
 
