@@ -24,6 +24,9 @@ const DEFAULT_COVID_DATA = [
   {
     subject: 'Sensory loss', Personal: 0, Local: 0, National: 0,
   },
+  {
+    subject: 'None or Other', Personal: 0, Local: 0, National: 0,
+  },
 ];
 
 const DEFAULT_MOOD_DATA = [
@@ -58,7 +61,8 @@ function load_personal_results(surveyResults, covidData, setCovidData, moodData,
     'Fever': 0, 
     "Coughing": 0, 
     "Muscle aches": 0, 
-    "Sensory loss": 0
+    "Sensory loss": 0,
+    "None or Other": 0
   }
   let moodResults = surveyResults["MOOD"]
   let moodTotals = { Anxiety: 0, Gratitude: 0, Happiness: 0, Positivity: 0, Sadness: 0, Stress: 0 }
@@ -120,14 +124,16 @@ function load_local_national_results(userZIP, aggregateResults, covidData, setCo
     'Fever': 0, 
     "Coughing": 0, 
     "Muscle aches": 0, 
-    "Sensory loss": 0
+    "Sensory loss": 0,
+    "None or Other": 0
   }
   let localCovidTotals = { 
     'Shortness of breath': 0, 
     'Fever': 0, 
     "Coughing": 0, 
     "Muscle aches": 0, 
-    "Sensory loss": 0
+    "Sensory loss": 0,
+    "None or Other": 0
   }
   let moodResults = aggregateResults["MOOD"]
   let moodTotals = { Anxiety: 0, Gratitude: 0, Happiness: 0, Positivity: 0, Sadness: 0, Stress: 0 }
