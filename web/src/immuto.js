@@ -603,7 +603,7 @@ const init = function(debug, debugHost) {
             .then(fileInfo => {
                 let decryptKey = this.generate_key_from_password(password)  
                 let fileURL = fileInfo.remoteURL
-                let encryptedKey = fileInfo.encryptedKey
+                let encryptedKey = fileInfo.encryptedKey.replace(/\n/g, '') // SAFARI AND FIREFOX ADD EXTRA NEW LINES ON POST FROM THE UPLOAD
                 let iv = this.string_to_iv(fileInfo.iv)
                 
                 let fileDecryptInfo = JSON.parse(this.decrypt_string(encryptedKey, decryptKey, iv))  

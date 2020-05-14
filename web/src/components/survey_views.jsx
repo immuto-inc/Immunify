@@ -207,7 +207,11 @@ const SurveyForm = (
                   />
                   Submitting...</span>)
     setHandleingSubmit(true)
-    handleSubmit(surveyValues)
+    let successfulValidation = handleSubmit(surveyValues)
+    if (!successfulValidation) {
+      setHandleingSubmit(false)
+      setSubmitText("Submit")
+    }
   }
   
   if (!questions.length) return <div></div>

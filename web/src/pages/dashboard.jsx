@@ -102,6 +102,10 @@ const Dashboard = (
                     pointValue="100"
                     handleSubmit={responses => {
                       let responseString = JSON.stringify(responses)
+                      if (responses[2] && responses[2].toLowerCase() != "na" && responses[2].length != 5) {
+                        alert("Please enter a valid 5-digit ZIP code")
+                        return false
+                      }
                       let userPassword = window.localStorage.password
                       im.create_data_management(responseString, "Demographic Survey", "editable", userPassword, "")
                       .then(recordID => {
@@ -125,6 +129,7 @@ const Dashboard = (
                         console.error(err)
                         alert("Failed blockchain transaction while submitting survey: " + err)
                       })
+                      return true // no validation error
                     }}
                     />      
       </Container>
