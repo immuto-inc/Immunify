@@ -8,8 +8,12 @@ var sigUtil = require('eth-sig-util')
 var NodeHTTP = require('xmlhttprequest').XMLHttpRequest // for backend compatability
 var NodeForm = require('form-data')                     // for backend compatability
 var crypto = require('crypto')
+const NodeRSA = require('node-rsa');
 
 const SYMMETRIC_SCHEME="aes-256-ctr"
+const VALID_RECORD_TYPES=["basic", "editable"]
+const DEV_ENDPOINT  = "https://dev.immuto.io"
+const PROD_ENDPIONT = "https://api.immuto.io"
 
 function new_HTTP() {
     if (IN_BROWSER) return new XMLHttpRequest()
@@ -21,19 +25,18 @@ function new_Form() { // for sending files with XMLHttpRequest
     else return new NodeForm()
 }
 
-
 let immuto = {} 
 const init = function(debug, debugHost) {    
-    this.host = "https://www.immuto.io"
+    this.host = PROD_ENDPIONT
     if (debug === true) {
         if (debugHost)
             this.host = debugHost
         else 
-            this.host = "https://dev.immuto.io" // reasonable default
+            this.host = DEV_ENDPOINT // reasonable default
     }
 
     try {
-        this.web3 = new Web3("https://www.immuto.io") // Dummy provider because required on init now
+        this.web3 = new Web3(PROD_ENDPIONT) // Dummy provider because required on init now
     } catch(err) {
         console.error(err)
         throw new Error("Web3js is a required dependency of the Immuto API. Make sure it is included wherever immuto.js is present.")
@@ -47,18 +50,13 @@ const init = function(debug, debugHost) {
     this.authToken = ""
     this.email = ""
 
-    // for Web3 connection (record creation/verification)
-    this.connected = false
-    let attemptConnection = false
-
     if (IN_BROWSER) {
         let ls = window.localStorage // preserve session across pages
-        if (ls.authToken && ls.email && ls.salt && ls.encryptedKey) {
-            this.salt = ls.salt
-            this.encryptedKey = ls.encryptedKey
-            this.authToken = ls.authToken
-            this.email = ls.email
-            attemptConnection = true
+        if (ls.IMMUTO_authToken && ls.IMMUTO_email && ls.IMMUTO_salt && ls.IMMUTO_encryptedKey) {
+            this.salt = ls.IMMUTO_salt
+            this.encryptedKey = ls.IMMUTO_encryptedKey
+            this.authToken = ls.IMMUTO_authToken
+            this.email = ls.IMMUTO_email.toLowerCase()
         }
     }
 
@@ -75,6 +73,9 @@ const init = function(debug, debugHost) {
             var sec = a.getSeconds() < 10 ? '0' + a.getSeconds() : a.getSeconds();
             var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
             return time;
+        },
+        convert_js_time: function(time_js) {
+            return this.convert_unix_time(time_js / 1000)
         },
         emails_to_addresses: (emails) => {
             return new Promise((resolve, reject) => {
@@ -145,50 +146,86 @@ const init = function(debug, debugHost) {
             let address = sigUtil.recoverPersonalSignature({data: message, sig: signature})
             return this.web3.utils.toChecksumAddress(address)
         },
-        is_valid_recordID: (ID) => {
-            
-            if (!ID) return false;
-            if ("string" !== typeof ID) return false;
+        parse_record_ID: (recordID) => {
+            if (!recordID) throw new Error("recordID is required");
+            if ("string" !== typeof recordID) throw new Error("recordID must be string");
 
-            let idLength = ID.length
-
-            if (40 === idLength || 42 === idLength) {
-                // isAddress returns true with or without leading 0x
-                // isAddress returns true if ID is a string and false if it's an integer
-                return this.web3.utils.isAddress(ID) 
+            if (recordID.length !== 48) {
+                throw new Error(`Invalid recordID: ${recordID}, reason: length not 48`)
             }
-            
-            return false
+
+            return {
+                address: recordID.substring(0, 42),
+                shardHex: recordID.substring(42)
+            }
+        },
+        shard_to_URL: (shardIndex) => {
+            if (!shardIndex && shardIndex !== 0) {
+                throw new Error("No prefix given")
+            }
+
+            if (shardIndex === 0) { return "http://localhost:8443" } 
+
+            if (this.host === PROD_ENDPIONT) { 
+                return `https://prod${shardIndex}.immuto.io:8443` 
+            }
+
+            return `https://shard${shardIndex}.immuto.io:8443`
+        },
+
+        shardIndex_to_hex: (shardIndex) => {
+            const SHARD_LENGTH = 6
+            if (shardIndex > 16777215) { // ffffff
+                throw new Error(`shardIndex: ${shardIndex} exceeds width of ${SHARD_LENGTH}`)
+            }
+            if (shardIndex < 0) {
+                throw new Error(`shardIndex must be a positive integer`)
+            }
+
+            let hexString = Number(shardIndex).toString(16)
+
+            while (hexString.length < SHARD_LENGTH) {
+                hexString = "0" + hexString
+            }
+
+            return hexString
+        },
+
+        hex_to_shardIndex: (hexString) => {
+            if (!hexString) throw new Error("hexString is required")
+            if (typeof hexString !== "string") throw new Error(`hexString must be a string, got ${typeof hexString}`)
+
+            return parseInt(hexString, 16)
         }
     }
 
-    this.establish_connection = function(email) {
+    this.decrypt_account = function(password) {
+        try {
+            return this.web3.eth.accounts.decrypt( 
+                this.encryptedKey, 
+                password + this.salt 
+            );
+        } catch(err) {
+            throw new Error("Incorrect password")
+        }
+    }
+
+    this.get_registration_token = function(address) {
         return new Promise((resolve, reject) => {
-            if (!email) {
-                reject("Email required for connection")
-                return
+            if (!address) {
+                reject("User's address is required"); return;
             }
 
             var http = new_HTTP()
 
-            let sendstring = "email=" + email.toLowerCase()
-            http.open("GET", this.host + "/shard-public-node", true)
+            let sendstring = "address=" + address
+
+            http.open("POST", this.host + "/get-signature-data", true)
             http.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
+
             http.onreadystatechange = () => {
                 if (http.readyState === 4 && http.status === 200) {
-                    let URI = http.responseText
-                    try {
-                        if (this.connected) {
-                            resolve() // concurrent call to this function has already succeeded
-                        } else { 
-                            this.web3 = new Web3(URI)
-                            this.connected = true
-                            resolve()
-                        }
-                    } catch (err) {
-                        this.connected = false
-                        reject(err)
-                    }
+                    resolve(http.responseText)
                 } else if (http.readyState === 4) {
                     reject(http.responseText)
                 }
@@ -197,45 +234,24 @@ const init = function(debug, debugHost) {
         })
     }
 
-    this.establish_manual_connection = function(URI) {
-        this.web3 = new Web3(URI)
-    }
-
-    if (attemptConnection) {
-        // safely concurrent with verification auto-connection calls
-        this.establish_connection(this.email)
-        .then(() => {}) // no need to do anything
-        .catch((err) => {console.error(err)})
-    }
-
-    this.get_registration_token = function(address) {
-        return new Promise((resolve, reject) => {
-            var http = new_HTTP()
-
-            let sendstring = "address=" + address
-
-            http.open("POST", this.host + "/get-signature-data", true)
-            http.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
-
-            http.onreadystatechange = () => {
-                    if (http.readyState === 4 && http.status === 200) {
-                        resolve(http.responseText)
-                    } else if (http.readyState === 4) {
-                        reject(http.responseText)
-                    }
-            }
-            http.send(sendstring)
-        })
-    }
-
     this.register_user = function(email, password, orgToken) {
         return new Promise((resolve, reject) => {
+            if (!email) {
+                reject("User email is required"); return;
+            }
+            if (!password) {
+                reject("User password is required"); return;
+            }
+
+            email = email.toLowerCase()
             let salt = this.web3.utils.randomHex(32)
             let account = this.web3.eth.accounts.create()
             let address = account.address
             let encryptedKey = this.web3.eth.accounts.encrypt(account.privateKey, password + salt);
 
-            this.get_registration_token(address).then((token) => {
+
+            this.get_registration_token(address)
+            .then((token) => {
                 let signature = account.sign(token)
                 var http = new_HTTP()
 
@@ -250,7 +266,7 @@ const init = function(debug, debugHost) {
                     sendstring += "&registrationCode=" + orgToken
 
                 http.open("POST", this.host + "/submit-registration", true)
-                http.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
+                http.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
 
                 http.onreadystatechange = () => {
                     if (http.readyState === 4 && http.status === 204) {
@@ -261,108 +277,146 @@ const init = function(debug, debugHost) {
                 }
                 http.send(sendstring)
             })
+            .catch(err => reject(err))
         })
     }
 
-    this.authenticate = function(email, password) {
+
+    // Best for backend use only, while authenticated as organization admin
+    this.permission_new_user = function(newUserEmail) {
         return new Promise((resolve, reject) => {
-            if (this.salt && this.encryptedKey && this.authToken && this.email) {
-                reject("User already authenticated. Call deauthenticate before authenticating a new user.")
-                return
-            } 
-
-            if (!email) {
-                reject("Email required for authentication")
-                return
-            }
-            if (!password) {
-                reject("Password required for authentication")
-                return
+            if (!newUserEmail) {
+                reject("User email is required");
+                return;
             }
 
-            this.establish_connection(email).then(() => {
-                let http = new_HTTP()
-
-                let sendstring = "email=" + email 
-                sendstring += "&password=" + this.web3.utils.sha3(password) // server does not see password
-
-                http.open("POST", this.host + "/submit-login", true)
-                http.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
-                http.onreadystatechange = () => {
-                    if (http.readyState === 4 && http.status === 200) {
-                        let response = JSON.parse(http.responseText)
-                        this.salt = response.salt
-                        this.encryptedKey = response.encryptedKey
-                        this.authToken = response.authToken
-
-                        let account = undefined
-                        try {
-                            account = this.web3.eth.accounts.decrypt( 
-                                this.encryptedKey, 
-                                password + this.salt 
-                            );
-                        } catch(err) {
-                            reject("Incorrect password")
-                            return
-                        }
-                        
-                        let signature = account.sign(this.authToken)
-
-                        let sendstring = "address=" + account.address
-                        sendstring += "&signature=" + JSON.stringify(signature)
-                        sendstring += "&authToken=" + this.authToken
-
-                        let http2 = new_HTTP()
-                        http2.open("POST", this.host + "/prove-address", true)
-                        http2.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
-                        http2.onreadystatechange = () => {
-                            if (http2.readyState === 4 && http2.status === 204) {
-                                if (IN_BROWSER) {
-                                    window.localStorage.authToken = this.authToken
-                                    window.localStorage.email = email
-                                    window.localStorage.salt = this.salt
-                                    window.localStorage.encryptedKey = this.encryptedKey
-                                }
-                                this.email = email
-                                resolve(this.authToken)
-                            } else if (http2.readyState === 4) {
-                                console.error("Error on login verification")
-                                reject(http2.responseText)
-                            }
-                        }
-                        http2.send(sendstring)
-                    } else if (http.readyState === 4){
-                        console.error("Error on login")
-                        reject(http.status + ": " + http.responseText)
-                    }
+            let sendstring = "email=" + newUserEmail.toLowerCase()
+            sendstring += "&noEmail=true" // Causes API to respond with authToken rather than emailing user
+            sendstring += "&authToken=" + this.authToken // org admin authToken for permissioning new user registration
+            
+            const http = new_HTTP()
+            http.open("POST", this.host + "/submit-org-member", true)
+            http.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
+            http.onreadystatechange = () => {
+                if (http.readyState === 4 && http.status === 200) {
+                    resolve(http.responseText)
+                } else if (http.readyState === 4) {
+                    reject(http.responseText)
                 }
-                http.send(sendstring)
-            }).catch((err) => {
-                console.error(err)
-                reject("Could not establish connection to verification server")
-            })
+            }
+            http.send(sendstring)
         })
+    }
+
+    this.submit_login = function(email, password) {
+        return new Promise((resolve, reject) => {
+            let http = new_HTTP()
+            let sendstring = "email=" + email 
+            sendstring += "&password=" + this.web3.utils.sha3(password) // server does not see password
+
+            http.open("POST", this.host + "/submit-login", true)
+            http.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
+            http.onreadystatechange = () => {
+                if (http.readyState === 4 && http.status === 200) {
+                    resolve(JSON.parse(http.responseText))
+                } else if (http.readyState === 4) {
+                    reject(http.responseText)
+                }
+            }
+            http.send(sendstring)
+        })
+    }
+
+    this.prove_address = function(authToken, email, password) {
+        return new Promise((resolve, reject) => {
+            let account = {}
+            try {
+                account = this.decrypt_account(password)
+            } catch(err) {
+                reject(err); return;
+            }
+
+            let signature = account.sign(authToken)
+            let sendstring = "address=" + account.address
+            sendstring += "&signature=" + JSON.stringify(signature)
+            sendstring += "&authToken=" + authToken
+            sendstring += "&returnUserInfo=" + true
+
+            let http2 = new_HTTP()
+            http2.open("POST", this.host + "/prove-address", true)
+            http2.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
+            http2.onreadystatechange = () => {
+                if (http2.readyState === 4 && (http2.status === 204 || http2.status === 200)) {
+                    if (http2.status === 204) {
+                        resolve(authToken)
+                        return
+                    }
+
+                    let userInfo = JSON.parse(http2.responseText)
+                    if (userInfo.publicKey) { // already generated RSA keypair
+                        resolve(authToken)
+                        return
+                    }
+
+                    this.generate_RSA_keypair(password)
+                    .catch(err => console.error(err))
+                    .finally(() => resolve(authToken))
+                } else if (http2.readyState === 4) {
+                    console.error("Error on login verification")
+                    reject(http2.responseText)
+                }
+            }
+            http2.send(sendstring)
+        })
+    }
+
+    this.authenticate = async function(email, password) {
+        if (!email) { throw new Error("Email required for authentication") }
+        if (!password) { throw new Error("Password required for authentication") }
+
+        if (this.authToken) {
+            await this.deauthenticate()
+        } 
+
+        email = email.toLowerCase()
+        const loginResponse = await this.submit_login(email, password)
+        if (loginResponse.result === "Your email or password are incorrect.") { 
+            throw new Error("Incorrect password") 
+        }
+
+        this.salt = loginResponse.salt
+        this.encryptedKey = loginResponse.encryptedKey
+        this.authToken = loginResponse.authToken
+        this.email = email
+        if (IN_BROWSER) {
+            window.localStorage.IMMUTO_salt = this.salt
+            window.localStorage.IMMUTO_encryptedKey = this.encryptedKey
+            window.localStorage.IMMUTO_authToken = this.authToken
+            window.localStorage.IMMUTO_email = this.email
+        }
+
+        return await this.prove_address(this.authToken, email, password)
+    }
+
+    this.reset_state = function() {
+        if (IN_BROWSER) {
+            window.localStorage.IMMUTO_authToken = ""
+            window.localStorage.IMMUTO_email = ""
+            window.localStorage.IMMUTO_salt = ""
+            window.localStorage.IMMUTO_encryptedKey = ""
+        }
+        this.authToken = ""
+        this.email = ""
+        this.salt = ""
+        this.encryptedKey = ""
     }
 
     this.deauthenticate = function() {
         return new Promise((resolve, reject) => {
-            let sendstring = `authToken=${this.authToken}`
-
-            if (IN_BROWSER) {
-                if (!this.authToken) {
-                    sendstring = `authToken=${window.localStorage.authToken}`
-                }
-                window.localStorage.authToken = ""
-                window.localStorage.email = ""
-                window.localStorage.salt = ""
-                window.localStorage.encryptedKey = ""
-                window.localStorage.password = "" // in case this is set elsewhere
-            }
-            this.authToken = ""
-            this.email = ""
-            this.salt = ""
-            this.encryptedKey = ""
-            this.connected = false
+            const authToken = this.authToken || (IN_BROWSER ? window.localStorage.IMMUTO_authToken : "") 
+            let sendstring = `authToken=${authToken}`
+            
+            this.reset_state()
             
             var http = new_HTTP();
             http.open("POST", this.host + "/logout-API", true);
@@ -378,39 +432,163 @@ const init = function(debug, debugHost) {
         })
     }
 
+    this.update_encryption_info = function(encryptedKey, hashedPassword) {
+        return new Promise((resolve, reject) => {
+            const xhr = new_HTTP();
+
+            xhr.open("POST", this.host + "/reset-password", true);
+            xhr.setRequestHeader("Content-Type", "application/json")
+            xhr.onreadystatechange = () => {
+                if (xhr.readyState === 4 && xhr.status === 204) {
+                    resolve() 
+                } else if (xhr.readyState === 4) {
+                    reject(xhr.responseText)
+                }
+            };
+
+            encryptedKey = JSON.stringify(encryptedKey)
+            const query = {
+                encryptedKey,
+                hashedPassword,
+                authToken: this.authToken
+            }
+
+            xhr.send(JSON.stringify(query));
+        })
+    }
+
+    this.reset_password = async function(oldPassword, newPassword) {
+        if (!oldPassword) throw new Error("oldPassword required")
+        if (!newPassword) throw new Error("newPassword required")
+        if (oldPassword === newPassword) throw new Error("oldPassword and newPassword must not match")
+        if (!this.authToken) throw new Error("User must be authenticated to reset password")
+
+        const uInfo = await this.get_user_info()
+        const account = this.decrypt_account(oldPassword)
+
+        const encryptedKey = account.encrypt(newPassword + uInfo.userSalt) // leave salt unchanged 
+        const hashedPassword = this.web3.utils.sha3(newPassword)
+
+        await this.update_encryption_info(encryptedKey, hashedPassword)
+
+        // reauthenticate with updated info
+        await this.authenticate(this.email, newPassword)
+    }
+
     // convenience method for signing an arbitrary string
     // user address can be recovered from signature by utils.ecRecover
     this.sign_string = function(string, password) {
-        let account = undefined;
-        try { 
-            account = this.web3.eth.accounts.decrypt(
-                this.encryptedKey, 
-                password + this.salt
-            );
+        if (!string) throw new Error("string is required for signing")
+        if (!password) throw new Error("password is required to sign string")
 
-            return account.sign(string)
-        } catch(err) {
-            if (!this.email) {
-                throw new Error("User not yet authenticated.");
-            } else {
-                throw(err)
+        let account =  this.decrypt_account(password) // throws error on bad password
+        return account.sign(string)
+    }
+
+    this.get_public_key = function(email) {
+        return new Promise((resolve, reject) => {
+            if (!email) {
+                reject("email is required")
+                return
             }
+
+            let accessURL = this.host + "/public-key-for-user?email=" + email
+            accessURL += "&authToken=" + this.authToken
+
+            var http = new_HTTP();
+            http.open("GET", accessURL, true);
+            http.setRequestHeader('Accept', 'application/json, text/javascript');
+            http.onreadystatechange = function() {
+                if (http.readyState === 4 && http.status === 200) {
+                    resolve(http.responseText)
+                } else if (http.readyState === 4) {
+                    reject(http.responseText)
+                }
+            };
+
+            http.send()
+        })
+
+    }
+
+    this.decrypt_RSA_private_key = function(encryptedKey, rsaIv, password) {
+        if (!encryptedKey) {
+            throw new Error("encryptedKey is required for decryption")
         }
+        if (!rsaIv) {
+            throw new Error("iv is required for decryption")
+        }
+        if (!password) {
+            throw new Error("Password is required to decrypt RSA key")
+        }
+
+        const decryptKey = this.generate_key_from_password(password)  
+        const iv = this.string_to_iv(rsaIv)
+        return this.decrypt_string(encryptedKey, decryptKey, iv, 'base64')
+    }
+
+    this.generate_RSA_keypair = function(password) {
+        return new Promise((resolve, reject) => {
+            if (!password) {
+                reject("Password is required to generate RSA keypair")
+                return;
+            }
+
+            const rsaKey = NodeRSA({b: 2048})
+            const pubKey = rsaKey.exportKey('public')
+            const privKey = rsaKey.exportKey('private')
+            const encrypted = this.encrypt_string_with_password(privKey, password, 'base64')
+            
+            const iv = this.iv_to_string(encrypted.iv)
+            const encryptedPrivateKey = encrypted.ciphertext
+
+            var form = new_Form()
+            form.append('publicKey', pubKey)
+            form.append('privateKey', encryptedPrivateKey)
+            form.append('rsaIv', iv)
+            form.append('authToken', this.authToken)
+
+            const url =  this.host + "/set-rsa-keypair"
+            if (IN_BROWSER) {
+                var xhr = new_HTTP()
+                xhr.open("POST", url, true);
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4 && xhr.status === 204) {
+                        resolve({pubKey, privKey})
+                    } else if (xhr.readyState === 4) {
+                        console.error("Error on upload")
+                        reject(xhr.responseText)
+                    }
+                };
+                xhr.send(form)
+            } else {
+                form.submit(url, function(err/*, res*/) {
+                    if (err) {
+                        reject(err)
+                        return
+                    }
+                    resolve({pubKey, privKey})
+                })
+            }
+        })
     }
 
     this.generate_key_from_password = function(password) {
-        const salt = this.salt
-        if (!salt) {
-            throw new Error("User must be authenticated to generate key")
+        if (!password) {
+            throw new Error("Password is required to generate key")
         }
+        const account = this.decrypt_account(password)
 
-        // cannot be SHA256, or Immuto backend could decrypt user data on login with current auth scheme
         const hash = crypto.createHash("sha512")
-        hash.update(password + salt);
+        hash.update(account.privateKey);
         return hash.digest().slice(0, 32) // key for aes-256 must be 32 bytes
     }
 
     this.iv_to_string = function(iv) {
+        if (!iv) {
+            throw new Error("No iv given")
+        }
+
         let str = ""
         for (let i = 0; i < iv.length; i ++) {
             str += iv[i] + ","
@@ -419,6 +597,10 @@ const init = function(debug, debugHost) {
     }
 
     this.string_to_iv = function(str) {
+        if (!str) {
+            throw new Error("No string given")
+        }
+
         let ivStr = str.split(',')
 
         let iv = new Uint8Array(16)
@@ -429,15 +611,32 @@ const init = function(debug, debugHost) {
         return iv
     }
 
-    this.encrypt_string_with_key = function(plaintext, key) {
-        if (typeof plaintext === "string") {
-            plaintext = this.str2ab(plaintext)
-        }
+    this.encrypt_with_publicKey = function(plaintext, publicKey) {
+        if (!plaintext) { throw new Error("No plaintext given") }
+        if (!publicKey) { throw new Error("No publicKey given") }
+
+        const key = new NodeRSA(publicKey)
+        return key.encrypt(plaintext, 'base64')
+    }
+
+    this.decrypt_with_privateKey = function(ciphertext, privateKey) {
+        if (!ciphertext) { throw new Error("No ciphertext given") }
+        if (!privateKey) { throw new Error("No privateKey given") }
+
+        const key = new NodeRSA(privateKey)
+        return key.decrypt(ciphertext, 'utf8')
+    }
+
+    this.encrypt_string_with_key = function(plaintext, key, encoding) {
+        if (!plaintext) { throw new Error("No plaintext given") }
+        if (!key) { throw new Error("No key given") }
+
+        encoding = encoding || 'binary'
 
         const iv = crypto.randomBytes(16)
         const cipher = crypto.createCipheriv(SYMMETRIC_SCHEME, key, iv)
-        let ciphertext = cipher.update(plaintext, 'binary', 'binary');
-        ciphertext += cipher.final('binary');
+        let ciphertext = cipher.update(plaintext, 'binary', encoding);
+        ciphertext += cipher.final(encoding);
 
         return {
             ciphertext: ciphertext,
@@ -446,35 +645,59 @@ const init = function(debug, debugHost) {
         }
     }
 
-    this.encrypt_string_with_password = function(plaintext, password) {
-        if (!password) throw new Error("No password provided");
+    this.encrypt_string_with_password = function(plaintext, password, encoding) {
+        if (!plaintext) {throw new Error("No plaintext given") }
+        if (!password) { throw new Error("No password given") }
 
         let key = this.generate_key_from_password(password)
-        return this.encrypt_string_with_key(plaintext, key)
+        return this.encrypt_string_with_key(plaintext, key, encoding)
     }
 
-    this.encrypt_string = function(plaintext) {
+    this.encrypt_string = function(plaintext, encoding) {
+        if (!plaintext) { throw new Error("No plaintext given") }
+
         const key = crypto.randomBytes(32)
-        return this.encrypt_string_with_key(plaintext, key)
+        return this.encrypt_string_with_key(plaintext, key, encoding)
     }
 
-    this.decrypt_string = function(ciphertext, key, iv) {
+    this.decrypt_string = function(ciphertext, key, iv, encoding) {
+        if (!ciphertext) { throw new Error("No ciphertext given") }
+        if (!key) { throw new Error("No key given") }
+        if (!iv) { throw new Error("No iv given") }
+
+        encoding = encoding || 'binary'
         let decipher = crypto.createDecipheriv(SYMMETRIC_SCHEME, key, iv)
-        let decrypted = decipher.update(ciphertext, 'binary', 'binary');
+        let decrypted = decipher.update(ciphertext, encoding, 'binary');
         return decrypted + decipher.final('binary');
     }
 
     this.str2ab = function(str) {
-      var buf = new ArrayBuffer(str.length); // 2 bytes for each char
-      var bufView = new Uint8Array(buf);
-      for (var i=0, strLen=str.length; i < strLen; i++) {
-        bufView[i] = str.charCodeAt(i);
-      }
-      return bufView;
+        if (!str) { throw new Error("No str given") }
+
+        var buf = new ArrayBuffer(str.length); // 2 bytes for each char
+        var bufView = new Uint8Array(buf);
+        for (var i=0, strLen=str.length; i < strLen; i++) {
+            bufView[i] = str.charCodeAt(i);
+        }
+        return bufView;
+    }
+
+    this.ab2str = function(buffer) {
+        if (!buffer) { throw new Error("No buffer given") }
+    
+        let str = ""
+
+        for (let charCode of buffer) {
+            str += String.fromCharCode(charCode)
+        }
+
+        return str
     }
 
     this.get_file_content = function(file) {
         return new Promise((resolve, reject) => {
+            if (!file) { reject("No file given"); return; }
+
             var reader = new FileReader();
             reader.onload = function() {
                 resolve(this.result)
@@ -486,25 +709,76 @@ const init = function(debug, debugHost) {
         })
     }
 
+    // iv for aes256, optional for RSA
+    this.store_user_key_for_record = function(userEmail, recordID, encryptedKey, iv) {
+        return new Promise((resolve, reject) => {
+            if (!userEmail) { reject("No userEmail given"); return; }
+            if (!recordID) { reject("No recordID given"); return; }
+            if (!encryptedKey) { reject("No encryptedKey given"); return; }
+
+            const url =  this.host + "/set-key-for-record"
+            let form = new_Form()
+            form.append('userForKey', userEmail)
+            form.append('recordID', recordID)
+            form.append('encryptedKey', encodeURI(encryptedKey))
+            if (iv) form.append('iv', this.iv_to_string(iv))
+            form.append('authToken', this.authToken)
+
+            if (IN_BROWSER) {
+                let xhr = new_HTTP()
+                xhr.open("POST", url, true);
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4 && xhr.status === 204) {
+                        resolve()
+                    } else if (xhr.readyState === 4) {
+                        reject(xhr.responseText)
+                    }
+                };
+                xhr.send(form);
+            } else {
+                form.submit(url, function(err/*, res*/) {
+                    if (err) {
+                        reject(err)
+                        return
+                    }
+                    resolve()
+                })
+            }
+        })
+    }
+
     this.upload_file_for_record = function(file, fileContent, recordID, password, projectID, handleProgress) {
         return new Promise((resolve, reject) => {
+            if (!file) { reject("No file given"); return; }
+            if (!fileContent) { reject("No fileContent given"); return; }
+            if (!recordID) { reject("No recordID given"); return; }
+            if (!password) { reject("No password given"); return; }
+
+
             let cipherInfo = this.encrypt_string(fileContent)
             
             let encryptedKey = this.encrypt_string_with_password(
             JSON.stringify({
                 key: cipherInfo.key,
                 iv: this.iv_to_string(cipherInfo.iv)
-            }), password)
+            }), password, 'base64')
 
             let encryptedFile = new Blob([this.str2ab(cipherInfo.ciphertext)], {type: file.type});
             encryptedFile.lastModifiedDate = new Date();
             encryptedFile.name = file.name;
 
-            var xhr = new XMLHttpRequest();
-            let URL =  this.host + "/prepare-file-upload"
-            xhr.open("POST", URL, true);
+            let sendstring  = 'fileSize=' + encryptedFile.size
+            sendstring += '&fileName=' + file.name
+            sendstring += '&fileType=' + file.type
+            sendstring += '&recordID=' + recordID
+            if (projectID) sendstring += '&projectID=' + projectID
+            sendstring += '&authToken=' + this.authToken
 
-            xhr.onreadystatechange = function() {
+            var xhr = new_HTTP()
+            let url =  this.host + "/prepare-file-upload"
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
+            xhr.onreadystatechange = () => {
                 if (xhr.readyState === 4 && xhr.status === 200) {
                     let presignedPostData = JSON.parse(xhr.responseText)
                     
@@ -516,13 +790,15 @@ const init = function(debug, debugHost) {
                     // Actual file has to be appended last
                     formData.append("file", encryptedFile);
 
-                    const http = new XMLHttpRequest();
+                    const http = new_HTTP();
 
                     http.open("POST", presignedPostData.url, true);
                     
-                    http.onreadystatechange = function() {
+                    http.onreadystatechange = () => {
                         if (http.readyState === 4 && http.status === 204) {
-                            resolve("done")
+                            this.store_user_key_for_record(this.email, recordID, encryptedKey.ciphertext, encryptedKey.iv)
+                            .then(() => resolve("done"))
+                            .catch(err => reject(err))
                         } else if (http.readyState === 4){
                             reject(http.responseText)
                         }
@@ -541,28 +817,21 @@ const init = function(debug, debugHost) {
                     reject(xhr.responseText)
                 }
             };
-
-            var fd = new_Form()
-            fd.append('fileSize', encryptedFile.size)
-            fd.append('fileName', file.name)
-            fd.append('fileType', file.type)
-            fd.append('recordID', recordID)
-            fd.append('encryptedKey', encodeURI(encryptedKey.ciphertext))
-            fd.append('iv', this.iv_to_string(encryptedKey.iv))
-            if (projectID) fd.append('projectID', projectID)
-            fd.append('authToken', this.authToken)
-            xhr.send(fd);
+            xhr.send(sendstring);
         })
     }
 
     this.upload_file = function(file, password, projectID, handleProgress) {
         return new Promise((resolve, reject) => {
+            if (!file) { reject("No file given"); return; }
+            if (!password) { reject("No password given"); return; }
+
             this.get_file_content(file)
             .then((content) => {
-                this.create_data_management(content, file.name, "editable", password, "")
+                this.create_data_management(content, file.recordName || file.name, "editable", password, "")
                 .then((recordID) => {
                     this.upload_file_for_record(file, content, recordID, password, projectID, handleProgress)
-                    .then(done => resolve(recordID))
+                    .then(() => resolve(recordID))
                     .catch(err => reject(err))
                 })
                 .catch(err => reject(err))
@@ -571,12 +840,42 @@ const init = function(debug, debugHost) {
         })
     }
 
-    this.get_info_for_recordID = function(recordID, versionNumber) {
+    this.upload_file_data = function(fileContent, fileName, password, projectID, handleProgress) {
         return new Promise((resolve, reject) => {
-            let accessURL = this.host + "/file-for-recordID?recordID=" + recordID 
-            if (versionNumber) {
-                accessURL += "&versionNumber=" + (versionNumber - 1) // server indexes by 0
-            }
+            if (!fileContent) { reject("No fileContent given"); return; }
+            if (!fileName) { reject("No fileName given"); return; }
+            if (!password) { reject("No password given"); return; }
+
+            let file = {name: fileName, type: "text/plain"}
+            projectID = projectID || ''
+
+            this.create_data_management(fileContent, fileName, "editable", password, "")
+            .then((recordID) => {
+                this.upload_file_for_record(file, fileContent, recordID, password, projectID, handleProgress)
+                .then(() => resolve(recordID))
+                .catch(err => reject(err))
+            })
+            .catch(err => reject(err))
+        })
+    }
+
+    this.download_file_data = function(recordID, password, version) {
+        version = version || 0
+        return new Promise((resolve, reject) => {
+            if (!recordID) { reject("No recordID given"); return; }
+            if (!password) { reject("No password given"); return; }
+
+            this.download_file_for_recordID(recordID, password, version, true)
+            .then(file => resolve(file.data))
+            .catch(err => reject(err))
+        })
+    }
+
+    this.search_records_by_hash = function(hash) {
+        return new Promise((resolve, reject) => {
+            if (!hash) { reject("No hash given"); return; }
+
+            let accessURL = this.host + "/records-for-hash?hash=" + hash
             accessURL += "&authToken=" + this.authToken
 
             var http = new_HTTP();
@@ -584,9 +883,7 @@ const init = function(debug, debugHost) {
             http.setRequestHeader('Accept', 'application/json, text/javascript');
             http.onreadystatechange = function() {
                 if (http.readyState === 4 && http.status === 200) {
-                    resolve(JSON.parse(http.responseText))
-                } else if (http.readyState === 4 && http.status === 404) {
-                    resolve(undefined)
+                    resolve({records: JSON.parse(http.responseText), hash})
                 } else if (http.readyState === 4) {
                     reject(http.responseText)
                 }
@@ -596,74 +893,274 @@ const init = function(debug, debugHost) {
         })
     }
 
-    this.download_file_for_recordID = function(recordID, password, asPlaintext) {
+    this.search_records_by_content = function(fileContent) {
+        return this.search_records_by_hash(this.web3.eth.accounts.hashMessage(fileContent))
+    }
+
+    this.search_records_by_query = function(query) {
         return new Promise((resolve, reject) => {
-            if (!password) { reject("NO PASSWORD PROVIDED"); return; }
-            this.get_info_for_recordID(recordID)
-            .then(fileInfo => {
-                let decryptKey = this.generate_key_from_password(password)  
-                let fileURL = fileInfo.remoteURL
-                let encryptedKey = decodeURI(fileInfo.encryptedKey)
-                let iv = this.string_to_iv(fileInfo.iv)
+            if (!query) { reject("No query given"); return; }
 
-                let fileDecryptInfo = JSON.parse(this.decrypt_string(encryptedKey, decryptKey, iv))
-                
-                let fileDKey = fileDecryptInfo.key.data
-                let fileDiv = this.string_to_iv(fileDecryptInfo.iv)
+            let accessURL = this.host + '/search-user-data-contracts'
+            accessURL += "?authToken=" + this.authToken
 
-                let http = new_HTTP();
-                http.open("GET", fileURL, true);
-                http.responseType = "arraybuffer"
-                http.onreadystatechange = () => {
-                    if (http.readyState === 4 && http.status === 200) {
-                        let encryptedData = new Uint8Array(http.response)
-                        let plaintext = this.decrypt_string(encryptedData, fileDKey, fileDiv) // this can be used for auto-verification (before splitting)
+            var http = new_HTTP();
+            http.open("POST", accessURL, true);
+            http.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
+            http.onreadystatechange = function() {
+                if (http.readyState === 4 && http.status === 200) {
+                    resolve(JSON.parse(http.responseText))
+                } else if (http.readyState === 4) {
+                    reject(http.responseText)
+                }
+            };
 
-                        let file = {
-                            type: fileInfo.type,
-                            name: fileInfo.name,
-                            data: asPlaintext ? plaintext : this.str2ab(plaintext)
-                        }
-
-                        resolve(file)
-                    } else if (http.readyState === 4) {
-                        console.error(http.response)
-                    }
-                };
-
-                http.send()
-            })
-            .catch(err => reject(err))
+            http.send(`searchQuery=${query}`)
         })
+    }
+
+    this.get_info_for_recordID = function(recordID) {
+        return new Promise((resolve, reject) => {
+            if (!recordID) { reject("No recordID given"); return; }
+
+            let accessURL = this.host + "/record-for-user?recordID=" + recordID 
+            accessURL += "&authToken=" + this.authToken
+
+            var http = new_HTTP();
+            http.open("GET", accessURL, true);
+            http.setRequestHeader('Accept', 'application/json, text/javascript');
+            http.onreadystatechange = function() {
+                if (http.readyState === 4 && http.status === 200) {
+                    resolve(JSON.parse(http.responseText))
+                } else if (http.readyState === 4) {
+                    reject(http.responseText)
+                }
+            };
+
+            http.send()
+        })
+    }
+
+    this.build_full_URL = function(remoteURL) {
+        if (!remoteURL) { throw new Error("No remoteURL given") }
+
+        const S3_BUCKET = this.host === PROD_ENDPIONT ? "immuto-prod" : "immuto-sandbox"
+
+        if (remoteURL.includes(S3_BUCKET)) return remoteURL
+
+        return "https://" + S3_BUCKET +  ".s3.amazonaws.com/readable/" + remoteURL
+    }
+
+    this.decrypt_fileKey_symmetric = function(encryptedKeyInfo, password) {
+        if (!encryptedKeyInfo) { throw new Error("No encryptedKeyInfo given") }
+        if (!password) { throw new Error("No password given") }
+
+        let decryptKey = this.generate_key_from_password(password)  
+        let encryptedKey = encryptedKeyInfo.encryptedKey
+        let iv = this.string_to_iv(encryptedKeyInfo.iv)
+
+        let fileDecryptInfo = this.decrypt_string(encryptedKey, decryptKey, iv, 'base64')
+
+        let parsed = JSON.parse(fileDecryptInfo)          
+        let fileDKey = parsed.key.data
+        let fileDiv = this.string_to_iv(parsed.iv)
+
+        return {
+            key: fileDKey,
+            iv: fileDiv
+        }
+    }
+
+    this.decrypt_fileKey_asymmetric = async function(encryptedKeyInfo, password) {   
+        if (!encryptedKeyInfo) { throw new Error("No encryptedKeyInfo given") }
+        if (!password) { throw new Error("No password given") }
+
+        const encryptedKey = encryptedKeyInfo.encryptedKey
+        const userInfo = await this.get_user_info()
+        const privateKey = this.decrypt_RSA_private_key(userInfo.privateKey, userInfo.rsaIv, password)
+        let fileDecryptInfo = JSON.parse(this.decrypt_with_privateKey(encryptedKey, privateKey))
+        fileDecryptInfo.iv = this.string_to_iv(fileDecryptInfo.iv)
+        return fileDecryptInfo
+    }
+
+    this.key_to_string = function(keyInfo) {
+        if (!keyInfo) { throw new Error("No keyInfo given") }
+        if (!keyInfo.iv) { throw new Error("Given keyInfo has no iv field") }
+        
+        keyInfo.iv = this.iv_to_string(keyInfo.iv)
+        return JSON.stringify(keyInfo)
+    }
+
+    this.get_encrypted_file = function(fileURL) {
+        return new Promise((resolve, reject) => {
+            if (!fileURL) { reject("No fileURL given"); return; }
+
+            let http = new_HTTP();
+            http.open("GET", this.build_full_URL(fileURL), true);
+            http.responseType = "arraybuffer"
+            http.onreadystatechange = () => {
+                if (http.readyState === 4 && http.status === 200) {
+                    resolve(new Uint8Array(http.response))
+                    
+                } else if (http.readyState === 4) {
+                    reject(http.responseText)
+                }
+            };
+            http.send()
+        })
+    }
+
+    this.download_file_for_record = async function(recordInfo, password, version, asPlaintext) {
+        if (!recordInfo) { throw new Error("No recordInfo given"); }
+        if (!recordInfo.files) { throw new Error("No files exist for record") }
+        if (!password) { throw new Error("No password given"); }
+        if (version < 0) { throw new Error("Version number must be non-negative integer") }
+        if (version >= recordInfo.files.length) {
+            throw new Error(`Invalid version number ${version} for record with ${recordInfo.files.length} versions`)
+        }
+        if (version !== 0)
+            version = version || recordInfo.files.length - 1 // default to recent
+        const fileInfo = recordInfo.files[version]
+        let fileURL = fileInfo.remoteURL
+
+        let encryptedKeyInfo = recordInfo[this.email.toLowerCase().replace(/\./g, " ")]
+
+        if (!encryptedKeyInfo) {
+            throw new Error(`User ${this.email} does not have key for decrypting file`);
+        }
+
+        let fileDecryptInfo = {}
+        if (encryptedKeyInfo.iv) { // for symmetric, personal key, non-RSA
+            fileDecryptInfo = this.decrypt_fileKey_symmetric(encryptedKeyInfo, password) 
+        } else { // for RSA
+            fileDecryptInfo = await this.decrypt_fileKey_asymmetric(encryptedKeyInfo, password) 
+        }
+        let fileDKey = fileDecryptInfo.key
+        let fileDiv = fileDecryptInfo.iv
+
+        let encryptedData = await this.get_encrypted_file(fileURL)
+        let plaintext = this.decrypt_string(encryptedData, fileDKey, fileDiv, 'base64') // this can be used for auto-verification (before splitting)
+
+        let file = {
+            type: fileInfo.type,
+            name: fileInfo.name,
+            data: asPlaintext ? plaintext : this.str2ab(plaintext)
+        }
+        return file
+    }
+
+    this.download_file_for_recordID = async function(recordID, password, version, asPlaintext) {
+        if (!recordID) { throw new Error("recordID is required"); }
+        if (!password) { throw new Error("password is required"); }
+        this.utils.parse_record_ID(recordID) // throws error on bad record
+
+        let recordInfo = await this.get_info_for_recordID(recordID)
+        let file = await this.download_file_for_record(recordInfo, password, version, asPlaintext)
+        return file
+    }
+
+    this.get_user_info = function() {
+        return new Promise((resolve, reject) => {
+            var xhr = new_HTTP();
+
+            let url = this.host + '/get-user-info?authToken=' + this.authToken
+            xhr.open("GET", url, true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
+            xhr.onreadystatechange = () => {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    resolve(JSON.parse(xhr.responseText)) 
+                } else if (xhr.readyState === 4) {
+                    reject(xhr.responseText)
+                }
+            };
+            xhr.send();
+        })
+    }
+
+    this.share_record_access = function(recordID, shareEmail) {
+        return new Promise((resolve, reject) => {
+            if (!recordID) { reject("No recordID given"); return; }
+            if (!shareEmail) { reject("No shareEmail given"); return; }
+
+            var xhr = new_HTTP();
+
+            xhr.open("POST", this.host + '/share-record', true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
+            xhr.onreadystatechange = () => {
+                if (xhr.readyState === 4 && xhr.status === 204) {
+                    resolve(xhr.responseText) 
+                } else if (xhr.readyState === 4) {
+                    reject(xhr.responseText)
+                }
+            };
+
+            let sendstring = 'recordID=' + recordID
+            sendstring += '&shareEmail=' + shareEmail
+            sendstring += '&authToken=' + this.authToken
+            xhr.send(sendstring);
+        })
+    }
+
+    this.share_record = async function(recordID, shareEmail, password) {
+        if (!recordID) throw new Error("RecordID is required")
+        if (!shareEmail) throw new Error("shareEmail is required")
+        if (!password) throw new Error("passowrd is required")
+        
+        await this.share_record_access(recordID, shareEmail)
+        let recordInfo = await this.get_info_for_recordID(recordID)
+        let publicKey = await this.get_public_key(shareEmail)
+
+        if (recordInfo.creator.toLowerCase() !== this.email.toLowerCase()) {
+            throw new Error(`Only the record creator ${recordInfo.creator} may share file content`)
+        }
+        if (!recordInfo.files || (recordInfo.files && recordInfo.files.length === 0)) {
+            throw new Error("No files exist for record");
+        }
+        let keyField = this.email.toLowerCase().replace(/\./g, " ")
+        if (!recordInfo[keyField]) {
+            throw new Error(`No key set for user ${this.email}`);
+        }
+
+        const keyInfo = this.decrypt_fileKey_symmetric(recordInfo[keyField], password)
+        const keyString = this.key_to_string(keyInfo)
+        const encryptedKey = this.encrypt_with_publicKey(keyString, publicKey)
+
+        await this.store_user_key_for_record(shareEmail, recordID, encryptedKey)
     }
 
     this.create_data_management = function(content, name, type, password, desc) {
         return new Promise((resolve, reject) => {
+            if (!content) { reject("No content given"); return; }
+            if (!name) { reject("No name given"); return; }
+            if (!type) { reject("No type given"); return; }
+            if (!password) { reject("No password given"); return; }
+
+            type = type.toLowerCase()
+            if (!VALID_RECORD_TYPES.includes(type)) { reject(`Invalid type: ${type}`); return; }
+
+            if (typeof content !== "string") {
+                try {
+                    content = this.ab2str(content)
+                } catch(err) {
+                    throw new Error(`Failed to convert data to string: ${err}`)
+                }
+            }
 
             // Good practice to keep account encrypted unless in use (signing transaction)
-            let account = undefined;
-            try { 
-                account = this.web3.eth.accounts.decrypt(
-                    this.encryptedKey, 
-                    password + this.salt
-                );
+            let account = {}
+            try {
+                account = this.decrypt_account(password)
             } catch(err) {
-                if (!this.email) {
-                    reject("User not yet authenticated.");
-                } else {
-                    reject("User password invalid")
-                }
-                return;
+                reject(err); return;
             }
 
             let signature = account.sign(content)
             signature.message = "" // Maintain data privacy
 
             var xhr = new_HTTP();
-            let sendstring = ""
 
             xhr.open("POST", this.host + "/submit-new-data-upload", true);
-            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
+            xhr.setRequestHeader("Content-Type", "application/json")
             xhr.onreadystatechange = () => {
                 if (xhr.readyState === 4 && xhr.status === 200) {
                     resolve(xhr.responseText) 
@@ -672,32 +1169,42 @@ const init = function(debug, debugHost) {
                 }
             };
 
-            sendstring += 'filename=' + name
-            sendstring += '&filedesc=' + desc
-            sendstring += '&signature=' + JSON.stringify(signature)
-            sendstring += '&type=' + type
-            sendstring += '&authToken=' + this.authToken
-            xhr.send(sendstring);
+            const query = {
+                filename: name,
+                filedesc: desc,
+                signature: JSON.stringify(signature),
+                type,
+                authToken: this.authToken
+            }
+
+            xhr.send(JSON.stringify(query));
         })
     }
 
     this.update_data_management = function(recordID, newContent, password) {
         return new Promise((resolve, reject) => {
-            if (!this.utils.is_valid_recordID(recordID)) {
+            if (!recordID) { reject("No recordID given"); return; }
+            if (!newContent) { reject("No newContent given"); return; }
+            if (!password) { reject("No password given"); return; }
+
+            if (!this.utils.parse_record_ID(recordID)) {
                 reject("Invalid recordID"); return; 
             }
 
-            let account = undefined;
-            try {
-                account = this.web3.eth.accounts.decrypt(
-                    this.encryptedKey, 
-                    password + this.salt
-                );
-            } catch(err) {
-                reject(err);
-                return;
+            if (typeof newContent !== "string") {
+                try {
+                    newContent = this.ab2str(newContent)
+                } catch(err) {
+                    throw new Error(`Failed to convert data to string: ${err}`)
+                }
             }
 
+            let account = {}
+            try {
+                account = this.decrypt_account(password)
+            } catch(err) {
+                reject(err); return;
+            }
             this.get_data_management_history(recordID, 'editable').then((history) => {
                 let priorHash = history.pop().hash
                 let signature = account.sign(newContent + priorHash)
@@ -719,6 +1226,7 @@ const init = function(debug, debugHost) {
                 sendstring += 'contractAddr=' + recordID // from submit-new-data-upload
                 sendstring += '&signature=' + JSON.stringify(signature)
                 sendstring += '&authToken=' + this.authToken
+                sendstring += '&plainHash=' + this.web3.eth.accounts.hashMessage(newContent) 
                 xhr.send(sendstring);
             }).catch((err) => {
                 reject(err)
@@ -728,408 +1236,98 @@ const init = function(debug, debugHost) {
 
     this.get_data_management_history = function(recordID, type) {
         return new Promise((resolve, reject) => {
-            if (!this.utils.is_valid_recordID(recordID)) {
+            if (!recordID) { reject("No recordID given"); return; }
+            if (!type) { reject("No type given"); return; }
+
+            type = type.toLowerCase()
+            if (!VALID_RECORD_TYPES.includes(type)) { reject(`Invalid type: ${type}`); return; }
+
+            let recordInfo = this.utils.parse_record_ID(recordID)
+
+            if (!recordInfo) {
                 reject("Invalid recordID"); return; 
             }
 
-            if (this.connected) { 
-                let contract = undefined
-                if (type === "basic") {
-                    contract = new this.web3.eth.Contract(BASIC_DATA_STORAGE_ABI, recordID);
-                } else if (type === "editable") {
-                    contract = new this.web3.eth.Contract(EDITABLE_DATA_STORAGE_ABI, recordID);
-                } else {
-                    reject("Invalid contract type: " + type)
-                    return
-                }
-                
-                contract.getPastEvents('Updated', {
-                    fromBlock: 0
-                })
-                .then((events) => {
-                    let history = []
-                    for (let i = 0; i < events.length; i++) {
-                        let event = events[i]
-                        history.push({
-                            timestamp: this.utils.convert_unix_time(event.returnValues.timestamp),
-                            hash: event.returnValues.hash,
-                            signer: event.returnValues.updater
-                        })
-                    }
-                    resolve(history)
-                }).catch((err) => {
-                    reject(err)
-                })
+            let shardIndex = this.utils.hex_to_shardIndex(recordInfo.shardHex)
+            const web3 = new Web3(this.utils.shard_to_URL(shardIndex))
+
+            let contract = undefined
+            if (type === "basic") {
+                contract = new web3.eth.Contract(BASIC_DATA_STORAGE_ABI, recordInfo.address);
+            } else if (type === "editable") {
+                contract = new web3.eth.Contract(EDITABLE_DATA_STORAGE_ABI, recordInfo.address);
             } else {
-                if (!this.email) {
-                    reject("User not yet authenticated. No email provided.")
-                    return
-                } else { 
-                    this.establish_connection(this.email).then(() => {
-                        // this.connected is now true, can safely recurse once
-                        this.get_data_management_history(recordID, type).then((history) => {
-                            resolve(history)
-                        }).catch((err) => {
-                            reject(err)
-                        })
-                    }).catch((err) => {
-                        reject("Unable to establish connection")
+                console.warn(`Unexpected type: ${type}... defaulting to editable`)
+                contract = new web3.eth.Contract(EDITABLE_DATA_STORAGE_ABI, recordInfo.address);
+            }
+            
+            contract.getPastEvents('Updated', {
+                fromBlock: 0
+            })
+            .then((events) => {
+                let history = []
+                for (let i = 0; i < events.length; i++) {
+                    let event = events[i]
+                    history.push({
+                        timestamp: this.utils.convert_unix_time(event.returnValues.timestamp),
+                        hash: event.returnValues.hash,
+                        signer: event.returnValues.updater
                     })
                 }
-            }
+                resolve(history)
+            }).catch((err) => {
+                reject(err)
+            })
         })
     }
 
     this.verify_data_management = function (recordID, type, verificationContent) {
         return new Promise((resolve, reject) => {
-            if (!this.utils.is_valid_recordID(recordID)) {
+            if (!recordID) { reject("No recordID given"); return; }
+            if (!type) { reject("No type given"); return; }
+            if (!verificationContent) { reject("No verificationContent given"); return; }
+
+            type = type.toLowerCase()
+            if (!VALID_RECORD_TYPES.includes(type)) { reject(`Invalid type: ${type}`); return; }
+
+            if (typeof verificationContent !== "string") {
+                try {
+                    verificationContent = this.ab2str(verificationContent)
+                } catch(err) {
+                    throw new Error(`Failed to convert data to string: ${err}`)
+                }
+            }
+
+            let recordInfo = this.utils.parse_record_ID(recordID)
+            if (!recordInfo) {
                 reject("Invalid recordID"); return; 
             }
 
-            if (this.web3) { // be more thorough later
-                this.get_data_management_history(recordID, type).then((history) => {
-                    this.utils.addresses_to_emails(history).then((history) => {
-                        for (let i = 0; i < history.length; i++) {
-                            let priorHash = ""
-                            if (i > 0) 
-                                priorHash = history[i - 1].hash
+            this.get_data_management_history(recordID, type).then((history) => {
+                this.utils.addresses_to_emails(history).then((history) => {
+                    for (let i = 0; i < history.length; i++) {
+                        let priorHash = ""
+                        if (i > 0) 
+                            priorHash = history[i - 1].hash
 
-                            let hash = this.web3.eth.accounts.hashMessage(verificationContent + priorHash)
-                            if (hash.toLowerCase() === history[i].hash.toLowerCase()) {
-                                resolve(history[i])
-                                return
-                            }
+                        let hash = this.web3.eth.accounts.hashMessage(verificationContent + priorHash)
+                        if (hash.toLowerCase() === history[i].hash.toLowerCase()) {
+                            resolve(history[i])
+                            return
                         }
-                        resolve(false)
-                    }).catch((err) => {
-                        reject(err)
-                    })
+                    }
+                    resolve(false)
                 }).catch((err) => {
                     reject(err)
                 })
-            } else {
-               reject("Connection to verification server not established. Call establish_connection to setup a connection.")
-            }
+            }).catch((err) => {
+                reject(err)
+            })
         })
     }
 
-    this.create_digital_agreement = function(content, name, type, password, signers, desc) {
-        return new Promise((resolve, reject) => {
-            let account = undefined;
-            try {
-                account = this.web3.eth.accounts.decrypt(
-                    this.encryptedKey, 
-                    password + this.salt
-                );
-            } catch(err) {
-                if (!this.email) {
-                    reject("User not yet authenticated.");
-                } else {
-                    reject("User password invalid")
-                }
-                return;
-            }
-
-            let hashedData = this.web3.utils.sha3(content)
-            let signature = account.sign(hashedData)
-            signature.message = "" // Unnecessary for request
-
-            var xhr = new_HTTP();
-            let sendstring = ""
-
-            xhr.open("POST", this.host + "/submit-new-agreement-upload", true);
-            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
-            xhr.onreadystatechange = () => {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    resolve(xhr.responseText)
-                } else if (xhr.readyState === 4) {
-                    reject(xhr.responseText)
-                }
-            };
-            sendstring += 'filename=' + name
-            sendstring += '&filedesc=' + desc
-            sendstring += '&signature=' + JSON.stringify(signature)
-            sendstring += '&type=' + type
-            if (type === 'multisig')
-                    sendstring += '&signers=' + JSON.stringify(signers)
-            sendstring += '&fileHash=' + hashedData
-            sendstring += '&authToken=' + this.authToken
-
-            xhr.send(sendstring);
-        })
-    }
-
-    this.sign_digital_agreement = function(recordID, password) {
-        return new Promise((resolve, reject) => {
-            if (!this.utils.is_valid_recordID(recordID)) {
-                reject("Invalid recordID"); return; 
-            }
-
-            let account = undefined;
-            try {
-                account = this.web3.eth.accounts.decrypt(
-                    this.encryptedKey, 
-                    password + this.salt
-                );
-            } catch(err) {
-                return err;
-            }
-
-            var http = new_HTTP()
-
-            let sendstring = "contractAddr=" + recordID 
-            sendstring += "&authToken=" + this.authToken 
-
-            http.open("POST", this.host + "/get-contract-info", true)
-            http.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
-            http.onreadystatechange = () => {
-                if (http.readyState === 4 && http.status === 200) {
-                    let response = JSON.parse(http.responseText)
-
-                    let currentHash =  response.hashes.pop()
-                    let signature = account.sign(currentHash)
-                    signature.message = "" // Unnecessary for request
-
-                    var xhr = new_HTTP();
-                    sendstring = ""
-
-                    xhr.open("POST", this.host + "/sign-agreement", true);
-                    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
-                    xhr.onreadystatechange = () => {
-                        if (xhr.readyState === 4 && xhr.status === 204) {
-                            resolve()
-                        } else if (xhr.readyState === 4) {
-                            reject(xhr.responseText)
-                        }
-                    };
-
-                    sendstring += 'contractAddr=' + recordID
-                    sendstring += '&signature=' + JSON.stringify(signature)
-                    sendstring += '&authToken=' + this.authToken
-                    xhr.send(sendstring);
-                } else if (http.readyState === 4) {
-                    reject(http.responseText)
-                }
-            }
-            http.send(sendstring) 
-
-            
-        })
-
-    }
-
-    this.update_digital_agreement = function(recordID, newContent, password) {
-        return new Promise((resolve, reject) => {
-            if (!this.utils.is_valid_recordID(recordID)) {
-                reject("Invalid recordID"); return; 
-            }
-
-            let account = undefined;
-            try {
-                account = this.web3.eth.accounts.decrypt(
-                    this.encryptedKey, 
-                    password + this.salt
-                );
-            } catch(err) {
-                return err;
-            }
-            password = undefined
-
-            let dataHash = this.web3.utils.sha3(newContent)
-            let signature = account.sign(dataHash)
-            signature.message = "" // Unnecessary for request
-
-            var xhr = new_HTTP();
-            let sendstring = ""
-
-            xhr.open("POST", this.host + "/update-agreement", true);
-            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
-            xhr.onreadystatechange = () => {
-                if (xhr.readyState === 4 && xhr.status === 204) {
-                    resolve()
-                } else if (xhr.readyState === 4) {
-                    reject(xhr.responseText)
-                }
-            };
-            sendstring += 'contractAddr=' + recordID
-            sendstring += '&signature=' + JSON.stringify(signature)
-            sendstring += '&docHash=' + dataHash
-            sendstring += '&authToken=' + this.authToken
-
-            xhr.send(sendstring);
-        })
-
-    }
-
-    this.verify_digital_agreement = function(recordID, type, verificationContent) {
-        return new Promise((resolve, reject) => {
-            if (!this.utils.is_valid_recordID(recordID)) {
-                reject("Invalid recordID"); return; 
-            }
-
-            if (this.web3) { // be more thorough later
-                var http = new_HTTP()
-
-                let sendstring = "contractAddr=" + recordID 
-                sendstring += "&authToken=" + this.authToken 
-
-                http.open("POST", this.host + "/get-contract-info", true)
-                http.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
-                http.onreadystatechange = () => {
-                    if (http.readyState === 4 && http.status === 200) {
-                        let response = JSON.parse(http.responseText)
-                        let hashes =  response.hashes
-                        let hash = this.web3.utils.sha3(verificationContent)
-                        let emails = response.signers
-                        if (emails) {
-                            this.get_digital_agreement_history(recordID, type).then((history) => {
-                                this.utils.emails_to_addresses(JSON.stringify(emails)).then((addresses) => {
-                                    let validSignatures = []
-                                    addresses.push(response.userAddr)
-                                    for (let i = 0; i < addresses.length; i++) {
-                                        addresses[i] = addresses[i].toLowerCase()
-                                    }
-                                    let addressLookup = new Set(addresses)
-                                    let currentVersion = 0
-
-                                    for (let i = 0; i < history.length; i++) {
-                                        let sig = history[i].signature
-
-                                        //causes extra if original hash correct, rest not
-                                        for (let j = currentVersion; j < hashes.length; j++) {
-                                            if (j > i) break;
-                                            if (hashes[j].toLowerCase() === hash.toLowerCase()) {
-                                                let address = this.utils.ecRecover(hash, sig.v, sig.r, sig.s)
-                                                if (addressLookup.has(address.toLowerCase())) {
-                                                    validSignatures.push({
-                                                        version: j,
-                                                        timestamp: history[i].timestamp,
-                                                        hash: hash,
-                                                        signer: address,
-                                                        email: history[i]
-                                                    })
-                                                    break;
-                                                } else {
-                                                    currentVersion ++
-                                                }
-                                            }
-                                        }
-                                    }
-                                    if (validSignatures.length > 0) {
-                                        this.utils.addresses_to_emails(validSignatures).then((validSignatures) => {
-                                            resolve(validSignatures)
-                                        }).catch((err) => {
-                                            reject(err)
-                                        })
-                                    }
-                                    else {
-                                        resolve(false)
-                                    }
-                                }).catch((err) => {
-                                    reject(err)
-                                })
-                            }).catch((err) => {
-                                reject(err)
-                            })
-                        } else {
-                            this.get_digital_agreement_history(recordID, type).then((history) => {
-                                let sig = history[0].signature
-
-                                let address = this.utils.ecRecover(hash, sig.v, sig.r, sig.s)
-                                this.utils.addresses_to_emails([{signer: address}]).then((emails) => {
-                                    if (address.toLowerCase() === response.userAddr.toLowerCase()) {
-                                        resolve([{
-                                            version: 0,
-                                            timestamp: history[0].timestamp,
-                                            hash: hash,
-                                            signer: address,
-                                            email: emails[0].email
-                                        }])
-                                    } else {
-                                        resolve(false)
-                                    }
-                                }).catch((err) => {
-                                    reject(err)
-                                })
-                            }).catch((err) => {
-                                reject(err)
-                            })
-                        }
-
-                        
-                    } else if (http.readyState === 4) {
-                        reject(http.responseText)
-                    }
-                }
-                http.send(sendstring) 
-            } else {
-               reject("Connection to verification server not established. Call establish_connection to setup a connection.")
-            }
-        })
-    }
-
-    this.get_digital_agreement_history = function(recordID, type) {
-        return new Promise((resolve, reject) => {
-            if (!this.utils.is_valid_recordID(recordID)) {
-                reject("Invalid recordID"); return; 
-            }
-
-            if (this.connected) { 
-                let contract = undefined
-                if (type === "single_sign") {
-                    contract = new this.web3.eth.Contract(SINGLE_SIGN_AGREEMENT_ABI, recordID);
-                } else if (type === "multisig") {
-                    contract = new this.web3.eth.Contract(MULTISIG_AGREEMENT_ABI, recordID);
-                } else {
-                    reject("Invalid contract type: " + type)
-                    return
-                }
-                
-                contract.getPastEvents('Signed', {
-                    fromBlock: 0,
-                    toBlock: 'latest'
-                })
-                .then((events) => {
-                    let history = []
-                    for (let i = 0; i < events.length; i++) {
-                        let event = events[i]
-
-                        let v = event.returnValues.v
-                        let r = event.returnValues.r
-                        let s = event.returnValues.s
-                        let signature = {v: v, r: r, s: s}
-
-                        history.push({
-                            timestamp: this.utils.convert_unix_time(event.returnValues.timestamp),
-                            signature: signature
-                        })
-                    }
-                    resolve(history)
-                }).catch((err) => {
-                    reject(err)
-                })
-            } else {
-                if (!this.email) {
-                    reject("User not yet authenticated. No email provided.")
-                    return
-                } else { 
-                    this.establish_connection(this.email).then(() => {
-                        // this.connected is now true, can safely recurse once
-                        this.get_digital_agreement_history(recordID, type).then((history) => {
-                            resolve(history)
-                        }).catch((err) => {
-                            reject(err)
-                        })
-                    }).catch((err) => {
-                        reject("Unable to establish connection")
-                    })
-                }
-            }
-        })
-    }
     return this
 }
-
 
 const BASIC_DATA_STORAGE_ABI = [
         {
@@ -1252,126 +1450,6 @@ const EDITABLE_DATA_STORAGE_ABI = [
                 "type": "event"
         }
 ]
-
-const SINGLE_SIGN_AGREEMENT_ABI = [
-        {
-                "inputs": [
-                        {
-                                "name": "v",
-                                "type": "uint8"
-                        },
-                        {
-                                "name": "r",
-                                "type": "bytes32"
-                        },
-                        {
-                                "name": "s",
-                                "type": "bytes32"
-                        }
-                ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "constructor"
-        },
-        {
-                "anonymous": false,
-                "inputs": [
-                        {
-                                "indexed": false,
-                                "name": "timestamp",
-                                "type": "uint256"
-                        },
-                        {
-                                "indexed": false,
-                                "name": "v",
-                                "type": "uint8"
-                        },
-                        {
-                                "indexed": false,
-                                "name": "r",
-                                "type": "bytes32"
-                        },
-                        {
-                                "indexed": false,
-                                "name": "s",
-                                "type": "bytes32"
-                        }
-                ],
-                "name": "Signed",
-                "type": "event"
-        }
-]
-
-const MULTISIG_AGREEMENT_ABI = [
-        {
-                "constant": false,
-                "inputs": [
-                        {
-                                "name": "v",
-                                "type": "uint8"
-                        },
-                        {
-                                "name": "r",
-                                "type": "bytes32"
-                        },
-                        {
-                                "name": "s",
-                                "type": "bytes32"
-                        }
-                ],
-                "name": "Sign",
-                "outputs": [],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
-        },
-        {
-                "inputs": [
-                        {
-                                "name": "v",
-                                "type": "uint8"
-                        },
-                        {
-                                "name": "r",
-                                "type": "bytes32"
-                        },
-                        {
-                                "name": "s",
-                                "type": "bytes32"
-                        }
-                ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "constructor"
-        },
-        {
-                "anonymous": false,
-                "inputs": [
-                        {
-                                "indexed": false,
-                                "name": "timestamp",
-                                "type": "uint256"
-                        },
-                        {
-                                "indexed": false,
-                                "name": "v",
-                                "type": "uint8"
-                        },
-                        {
-                                "indexed": false,
-                                "name": "r",
-                                "type": "bytes32"
-                        },
-                        {
-                                "indexed": false,
-                                "name": "s",
-                                "type": "bytes32"
-                        }
-                ],
-                "name": "Signed",
-                "type": "event"
-        }
-];
 
 immuto.init = init
 export default immuto;
