@@ -27,9 +27,9 @@ export const im = immuto.init(true, IMMUTO_URL);
 function load_survey_response(recordID) {
     return new Promise((resolve, reject) => {
         let userPassword = window.localStorage.password
-        im.download_file_for_recordID(recordID, userPassword, true)
-        .then(fileInfo => {
-            resolve(JSON.parse(fileInfo.data))
+        im.download_file_data(recordID, userPassword)
+        .then(data => {
+            resolve(JSON.parse(data))
         })
         .catch(err => reject(err))
     })
@@ -93,9 +93,9 @@ function App() {
         if (uInfo.profileInfo) {
             let profileRecordID = uInfo.profileInfo
             let userPassword = window.localStorage.password
-            im.download_file_for_recordID(profileRecordID, userPassword, true)
-            .then((fileInfo) => {
-                let demographicData = JSON.parse(fileInfo.data)
+            im.download_file_data(profileRecordID, userPassword)
+            .then((data) => {
+                let demographicData = JSON.parse(data)
                 setProfileInfo(demographicData)
             })
             .catch(err => console.error(err))

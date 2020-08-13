@@ -1,5 +1,8 @@
 /******************************** Dependencies ********************************/
 const validator = require('validator')
+const immuto = require('immuto-sdk')
+
+const im = immuto.init(true, "https://dev.immuto.io"); // URL doesn't matter, just using utils
 
 /****************************** Module Interface ******************************/
 /* params is an object mapping names to values, e.g. req.body or req.query 
@@ -88,7 +91,7 @@ exports.VALIDATE_EMAIL = exports.build_validator(
     })
 exports.VALIDATE_RECORD_ID = exports.build_validator(
     (recordID) => {
-        if (!exports.is_valid_address(recordID)) {
+        if (!exports.is_valid_recordID(recordID)) {
             throw new Error("Invalid recordID")
         }
 
@@ -171,14 +174,25 @@ exports.is_valid_address = (address) => {
     )
 }
 
+exports.is_valid_recordID = (recordID) => {
+    if (!recordID) return false
 
+    if (recordID.length === 40 || recordID.length === 42) return exports.is_valid_address(recordID)
 
-
-
-
-
-
-
-
-
-
+    if (recordID.length === 48) {        
+        try {
+            let { address, shardHex } = im.utils.parse_record_ID(recordID)
+            if (!exports.is_valid_address(address)) return false
+            
+            let parsed = parseInt(shardHex, 16)
+            if (parsed === 0 || parsed) {
+                return true
+            }
+            return false
+        } catch(err) {
+            console.error(err)
+            return false
+        }
+    }
+    return false
+}

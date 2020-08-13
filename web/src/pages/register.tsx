@@ -17,7 +17,7 @@ import Copyright from '../components/copyright'
 import { API_URL, IMMUTO_URL } from "../utils";
 
 // @ts-ignore
-import immuto from 'immuto-backend';
+import immuto from 'immuto-sdk';
 export const im = immuto.init(true, IMMUTO_URL);
 
 const useStyles = makeStyles((theme) => ({

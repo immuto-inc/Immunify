@@ -8,7 +8,7 @@ import PageTitle from "../components/page_title"
 
 import { IMMUTO_URL } from "../utils";
 
-import immuto from 'immuto-backend';
+import immuto from 'immuto-sdk';
 const im = immuto.init(true, IMMUTO_URL);
 
 const Dashboard = ({authToken, userInfo}) => {
